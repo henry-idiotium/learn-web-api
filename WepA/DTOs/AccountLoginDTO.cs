@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace WepA.DTOs
@@ -10,7 +9,5 @@ namespace WepA.DTOs
 
 		[Required]
 		public string Password { get; set; }
-
-		public bool RememberMe { get; set; }
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace WepA.DTOs
@@ -25,5 +26,8 @@ namespace WepA.DTOs
 
 		[Required]
 		public string ConfirmPassword { get; set; }
+
+		[Required]
+		public List<string> Roles { get; set; }
 	}
 }
