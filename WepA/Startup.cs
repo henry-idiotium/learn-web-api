@@ -34,33 +34,14 @@ namespace WepA
 		{
 			// Configure DbContext
 			services.AddDbContext<WepADbContext>(options =>
-				options.UseSqlServer(
-					Configuration.GetConnectionString("WepA")));
+				options.UseSqlServer(Configuration.GetConnectionString("WepA")));
 
-			// Identity settings for development
-			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-			{
-				options.SignIn.RequireConfirmedEmail = false;
-				options.SignIn.RequireConfirmedAccount = false;
-				options.SignIn.RequireConfirmedPhoneNumber = false;
-			})
-			.AddEntityFrameworkStores<WepADbContext>();
+			services.IdentityConfiguration(CurrentEnvironment.IsDevelopment());
 
-			// Identity configurations for development
-			services.Configure<IdentityOptions>(options =>
-			{
-				// Password settings.
-				options.Password.RequireNonAlphanumeric = false;
-				options.Password.RequireUppercase = false;
-				options.Password.RequireLowercase = false;
-				options.Password.RequireDigit = false;
-				options.Password.RequiredLength = 0;
-				options.Password.RequiredUniqueChars = 0;
+			services.AuthenticationConfiguration(
+				Configuration.GetSection("JwtSettings").GetSection("Secret").Value);
 
-				// Lockout settings.
-				// options.Lockout.DefaultLockoutTimeSpan  = TimeSpan.FromMinutes(5);
-				// options.Lockout.MaxFailedAccessAttempts = 5;
-				// options.Lockout.AllowedForNewUsers      = true;
+			services.CorsConfiguration();
 
 				// User settings.
 				// options.User.AllowedUserNameCharacters =
@@ -71,10 +52,11 @@ namespace WepA
 			// AutoMapper Service
 			services.AddAutoMapper(typeof(Startup));
 
-			services.AddControllers();
+			// Provide specified key for JwtUtil class instance - Options pattern
+			services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 
-			services.AddSwaggerGen(c =>
-				c.SwaggerDoc("v1", new OpenApiInfo { Title = "WepA", Version = "v1" }));
+			services.AddControllers();
+			services.SwaggerConfiguration();
 		}
 
 		// This method runs after ConfigureServices, so the methods
@@ -103,6 +85,8 @@ namespace WepA
 			app.UseHttpsRedirection();
 
 			app.UseRouting();
+
+			app.UseCors("DevelopmentPolicy");
 
 			app.UseAuthorization();
 
