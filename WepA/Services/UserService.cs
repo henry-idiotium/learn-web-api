@@ -1,64 +1,55 @@
-using WepA.Services.Interfaces;
 using WepA.Models;
-using WepA.Data.Repositories.Interfaces;
-using WepA.Common;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
+using WepA.Interfaces.Services;
+using System.Security.Claims;
 
 namespace WepA.Services
 {
 	public class UserService : IUserService
 	{
-		private readonly ILogger<UserService> _logger;
-		private readonly IUserRepository _userRepository;
 		private readonly UserManager<ApplicationUser> _userManager;
 
-		public UserService(
-			ILogger<UserService> logger,
-			IUserRepository userRepository,
-			UserManager<ApplicationUser> userManager)
-		{
-			_logger = logger;
-			_userRepository = userRepository;
-			_userManager = userManager;
-		}
+		public UserService(UserManager<ApplicationUser> userManager) => _userManager = userManager;
 
 		public IEnumerable<ApplicationUser> GetUsers() => _userManager.Users;
 
-		public async Task<ResultStateToken> CreateUserAsync(ApplicationUser user, string password)
+		public async Task<bool> CreateUserAsync(ApplicationUser user,
+			string password,
+			List<string> roles)
 		{
-			var result = await _userManager.CreateAsync(user, password);
-			var errorList = new List<string>();
+			var createUser = await _userManager.CreateAsync(user, password);
+			if (!createUser.Succeeded) return false;
 
-			if (result.Succeeded)
-			{
-				await _userRepository.SaveAsync();
-				_logger.LogInformation($"User '{user.Email}' created a new account with password!");
-			}
-			else
-			{
-				foreach (var error in result.Errors)
-				{
-					errorList.Add(error.Description);
-				}
-			}
+			var newUser = await _userManager.FindByEmailAsync(user.Email);
+			// TODO - Add role validation
+			await _userManager.AddToRolesAsync(newUser, roles);
 
-			return new(result.Succeeded, errorList.ToArray());
+			var claims = new List<Claim>
+			{
+				new Claim(ClaimTypes.NameIdentifier, newUser.Id),
+				new Claim(ClaimTypes.Email, newUser.Email),
+				new Claim(ClaimTypes.Name, newUser.UserName)
+			};
+			foreach (var role in roles)
+				claims.Add(new Claim(ClaimTypes.Role, role));
+
+			var addClaims = await _userManager.AddClaimsAsync(newUser, claims);
+
+			if (!(createUser.Succeeded && addClaims.Succeeded))
+				await _userManager.DeleteAsync(user);
+
+			return createUser.Succeeded && addClaims.Succeeded;
 		}
 
 		public async Task<ApplicationUser> GetUserByIdAsync(string id) =>
 			await _userManager.FindByIdAsync(id);
 
-		public Task<ResultStateToken> DeleteUserByIdAsync(string id)
-		{
-			throw new System.NotImplementedException();
-		}
+		public async Task<ApplicationUser> GetUserByEmailAsync(string email) =>
+			await _userManager.FindByEmailAsync(email);
 
-		public Task<ResultStateToken> UpdateUserAsync(string id)
-		{
-			throw new System.NotImplementedException();
-		}
+		public Task<bool> DeleteUserByIdAsync(string id) => throw new System.NotImplementedException();
+		public Task<bool> UpdateUserAsync(string id) => throw new System.NotImplementedException();
 	}
 }

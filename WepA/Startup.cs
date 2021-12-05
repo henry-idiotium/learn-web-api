@@ -54,6 +54,7 @@ namespace WepA
 		{
 			builder.RegisterType<UserService>().As<IUserService>();
 			builder.RegisterType<AccountService>().As<IAccountService>();
+			builder.RegisterType<JwtUtil>().As<IJwtUtil>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request
@@ -71,6 +72,7 @@ namespace WepA
 
 			app.UseCors("DevelopmentPolicy");
 
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 			app.UseEndpoints(endpoints => endpoints.MapControllers());

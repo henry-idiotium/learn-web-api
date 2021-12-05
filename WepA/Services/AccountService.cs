@@ -1,11 +1,9 @@
+using System.Security.Claims;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using WepA.Common;
-using WepA.Data.Repositories.Interfaces;
+using WepA.Interfaces.Services;
 using WepA.Models;
-using WepA.Services.Interfaces;
 
 namespace WepA.Services
 {
@@ -13,61 +11,48 @@ namespace WepA.Services
 	{
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly UserManager<ApplicationUser> _userManager;
-		private readonly ILogger<AccountService> _logger;
-		private readonly IUserRepository _userRepository;
 
 		public AccountService(
 			SignInManager<ApplicationUser> signInManager,
-			UserManager<ApplicationUser> userManager,
-			ILogger<AccountService> logger,
-			IUserRepository userRepository)
+			UserManager<ApplicationUser> userManager)
 		{
 			_signInManager = signInManager;
 			_userManager = userManager;
-			_logger = logger;
-			_userRepository = userRepository;
 		}
 
-		public async Task<ResultStateToken> LoginAccountAsync(Account input)
+		public async Task<bool> LoginAccountAsync(Account account)
 		{
-			var result = await _signInManager.PasswordSignInAsync(
-				input.Email,
-				input.Password,
-				input.RememberMe,
-				lockoutOnFailure: false);
-			var errorList = new List<string>();
+			var loginResult = await _signInManager
+				.PasswordSignInAsync(account.Email, account.Password, false, false);
+			if (!loginResult.Succeeded) return false;
 
-			if (result.Succeeded)
-			{
-				_logger.LogInformation($"User {input.Email} logged in.");
-			}
-			else
-			{
-				errorList.Add("Invalid login attempt.");
-			}
+			var user = await _userManager.FindByEmailAsync(account.Email);
+			var claims = await _userManager.GetClaimsAsync(user);
 
-			return new(result.Succeeded, errorList.ToArray());
+			return claims != null;
 		}
 
-		public async Task<ResultStateToken> RegisterAccountAsync(ApplicationUser input, string password)
+		public async Task<bool> RegisterAccountAsync(ApplicationUser user, string password)
 		{
-			var result = await _userManager.CreateAsync(input, password);
-			var errorList = new List<string>();
+			var createUser = await _userManager.CreateAsync(user, password);
+			if (!createUser.Succeeded) return false;
 
-			if (result.Succeeded)
-			{
-				await _userRepository.SaveAsync();
-				_logger.LogInformation($"User '{input.Email}' created a new account with password!");
-			}
-			else
-			{
-				foreach (var error in result.Errors)
+			var newUser = await _userManager.FindByEmailAsync(user.Email);
+			await _userManager.AddToRoleAsync(newUser, "customer");
+
+			var addClaims = await _userManager.AddClaimsAsync(newUser,
+				new List<Claim>
 				{
-					errorList.Add(error.Description);
-				}
-			}
+					new Claim(ClaimTypes.Role, "customer"),
+					new Claim(ClaimTypes.NameIdentifier, newUser.Id),
+					new Claim(ClaimTypes.Email, newUser.Email),
+					new Claim(ClaimTypes.Name, newUser.UserName)
+				});
 
-			return new(result.Succeeded, errorList.ToArray());
+			if (!(createUser.Succeeded && addClaims.Succeeded))
+				await _userManager.DeleteAsync(user);
+
+			return createUser.Succeeded && addClaims.Succeeded;
 		}
 	}
 }

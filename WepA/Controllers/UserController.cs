@@ -6,22 +6,33 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using WepA.DTOs;
+using WepA.Interfaces.Services;
+using WepA.Interfaces.Utils;
 using WepA.Models;
 using WepA.Services.Interfaces;
 
 namespace WepA.Controllers
 {
+	[Authorize(Roles = "admin")]
 	[ApiController]
 	[Route("api/[controller]")]
 	public class UserController : ControllerBase
 	{
+		private readonly ILogger<UserController> _logger;
 		private readonly IUserService _userService;
 		private readonly IMapper _mapper;
+		private readonly IJwtUtil _jwtUtil;
 
-		public UserController(IUserService userService, IMapper mapper)
+		public UserController(
+			IUserService userService,
+			IMapper mapper,
+			ILogger<UserController> logger,
+			IJwtUtil jwtUtil)
 		{
 			_userService = userService;
 			_mapper = mapper;
+			_logger = logger;
+			_jwtUtil = jwtUtil;
 		}
 
 		[HttpGet("GetAll")]
@@ -61,16 +72,10 @@ namespace WepA.Controllers
 					var user = _mapper.Map<UserFormDTO, ApplicationUser>(input);
 					var result = await _userService.CreateUserAsync(user, input.Password);
 
-					actionResult = true;
-					message = !result.succeeded ?
-						string.Join("; ", result.errors) :
-						"Create user successfully!";
-				}
-				else
+				if (getToken)
 				{
-					message = string.Join("; ", ModelState.Values
-						.SelectMany(v => v.Errors)
-						.Select(e => e.ErrorMessage));
+					var token = await _jwtUtil.GenerateTokenAsync(input.Email, input.Roles);
+					return Ok(new { token });
 				}
 
 				return new JsonResult(new
