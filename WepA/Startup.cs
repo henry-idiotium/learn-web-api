@@ -1,8 +1,7 @@
-using WepA.Services.Interfaces;
 using WepA.Services;
-using WepA.Models;
-using WepA.Data.Repositories.Interfaces;
-using WepA.Data.Repositories;
+using WepA.Interfaces.Services;
+using WepA.Extensions.Helpers;
+using WepA.Extensions;
 using WepA.Data;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Hosting;
@@ -14,14 +13,21 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Autofac;
+using WepA.Utils;
+using WepA.Interfaces.Utils;
 
 namespace WepA
 {
 	public class Startup
 	{
-		public Startup(IConfiguration configuration) => Configuration = configuration;
+		public Startup(IWebHostEnvironment currentEnvironment, IConfiguration configuration)
+		{
+			CurrentEnvironment = currentEnvironment;
+			Configuration = configuration;
+		}
 
 		public IConfiguration Configuration { get; }
+		private IWebHostEnvironment CurrentEnvironment { get; set; }
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
