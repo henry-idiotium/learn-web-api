@@ -1,16 +1,16 @@
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using WepA.DTOs;
+using WepA.Models.Dtos;
+using WepA.Models.Domains;
 using WepA.Interfaces.Services;
-using WepA.Interfaces.Utils;
-using WepA.Models;
+using System.Threading.Tasks;
+using System.Linq;
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
+using WepA.Helpers;
+using WepA.Helpers.Messages;
 
 namespace WepA.Controllers
 {
@@ -18,79 +18,46 @@ namespace WepA.Controllers
 	[Route("api/[controller]/[action]")]
 	public class AuthController : ControllerBase
 	{
-		private readonly ILogger<AuthController> _logger;
 		private readonly IAccountService _accountService;
 		private readonly IMapper _mapper;
-		private readonly IJwtUtil _jwtUtil;
 
-		public AuthController(
-			ILogger<AuthController> logger,
-			IAccountService accountService,
-			IMapper mapper,
-			IJwtUtil jwtUtil)
+		public AuthController(IAccountService accountService, IMapper mapper)
 		{
-			_logger = logger;
 			_accountService = accountService;
 			_mapper = mapper;
-			_jwtUtil = jwtUtil;
 		}
 
 		[AllowAnonymous]
 		[HttpPost]
-		public async Task<IActionResult> Register([FromBody] AccountRegisterDTO input)
+		public async Task<IActionResult> Login([FromBody] LoginRequest model)
 		{
-			try
-			{
-				if (!ModelState.IsValid) return BadRequest(ModelState);
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState.SelectMany(k => k.Value.Errors));
 
-				input.UserName ??= input.Email;
-				var user = _mapper.Map<AccountRegisterDTO, ApplicationUser>(input);
-				var result = await _accountService.RegisterAccountAsync(user, input.Password);
-				if (!result) return BadRequest(new { message = "Invalid!" });
+			var authenticateResponse = await _accountService.LoginAsync(model);
 
-				var token = await _jwtUtil.GenerateTokenAsync(input.Email,
-					new List<string> { "customer" });
-				return Ok(new { token });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return new JsonResult(new { message = "Something went wrong!" })
-				{
-					StatusCode = StatusCodes.Status500InternalServerError
-				};
-			}
+			return Ok(authenticateResponse);
 		}
 
 		[AllowAnonymous]
 		[HttpPost]
-		public async Task<IActionResult> Login([FromBody] AccountLoginDTO input)
+		public async Task<IActionResult> Register([FromBody] RegisterRequest model)
 		{
-			try
-			{
-				if (!ModelState.IsValid) return BadRequest(ModelState);
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState.SelectMany(x => x.Value.Errors));
 
-				var account = _mapper.Map<AccountLoginDTO, Account>(input);
-				var result = await _accountService.LoginAccountAsync(account);
-				if (!result) return Unauthorized(new { message = "Invalid!" });
+			model.UserName ??= model.Email;
+			var user = _mapper.Map<RegisterRequest, ApplicationUser>(model);
+			await _accountService.RegisterAsync(user, model.Password);
 
-				var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
-					.Split(" ").Last();
-				var validateToken = _jwtUtil.Validate(token);
-				if (validateToken is not null) return Ok(new { message = "Successful!" });
+			return Ok(new { message = "User Registered" });
+		}
 
-				token = await _jwtUtil.GenerateTokenAsync(input.Email,
-					new List<string> { "customer" });
-				return Ok(new { token });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return new JsonResult(new { message = "Something went wrong!" })
-				{
-					StatusCode = StatusCodes.Status500InternalServerError
-				};
-			}
+		[HttpPost("/{userId}/{code}")]
+		public async Task<IActionResult> ConfirmEmail(string userId, string code)
+		{
+			await _accountService.ConfirmEmailAsync(userId, code);
+			return Ok(new { message = "Email confirmed" });
 		}
 	}
 }

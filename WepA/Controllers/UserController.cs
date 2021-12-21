@@ -1,95 +1,54 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using WepA.DTOs;
+using WepA.Models.Dtos.User;
+using WepA.Models.Domains;
 using WepA.Interfaces.Services;
-using WepA.Interfaces.Utils;
-using WepA.Models;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
+using WepA.Helpers.Attributes;
 
 namespace WepA.Controllers
 {
-	[Authorize(Roles = "admin")]
 	[ApiController]
 	[Route("api/[controller]/[action]")]
 	public class UserController : ControllerBase
 	{
-		private readonly ILogger<UserController> _logger;
 		private readonly IUserService _userService;
 		private readonly IMapper _mapper;
-		private readonly IJwtUtil _jwtUtil;
 
-		public UserController(
-			IUserService userService,
-			IMapper mapper,
-			ILogger<UserController> logger,
-			IJwtUtil jwtUtil)
+		public UserController(IUserService userService, IMapper mapper)
 		{
 			_userService = userService;
 			_mapper = mapper;
-			_logger = logger;
-			_jwtUtil = jwtUtil;
 		}
 
+		[JwtAuthorize]
 		[HttpGet]
 		public IActionResult GetAll()
 		{
-			try
-			{
-				var users = _mapper.Map<IEnumerable<ApplicationUser>, IEnumerable<UserDetailsDTO>>(
-					_userService.GetUsers());
-				return Ok(users);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return BadRequest(new { message = "Something went wrong!" });
-			}
+			var users = _mapper
+				.Map<IEnumerable<ApplicationUser>, IEnumerable<UserDetailsResponse>>(_userService.GetAll());
+			return Ok(users);
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create([FromBody] UserFormDTO input, bool getToken)
+		public async Task<IActionResult> Create([FromBody] ManageUserRequest model)
 		{
-			try
-			{
-				if (!ModelState.IsValid) return BadRequest(ModelState);
 
-				input.UserName ??= input.Email;
-				var user = _mapper.Map<UserFormDTO, ApplicationUser>(input);
-				var result = await _userService.CreateUserAsync(user, input.Password, input.Roles);
-				if (!result) return BadRequest(new { message = "Invalid!" });
+			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-				if (getToken)
-				{
-					var token = await _jwtUtil.GenerateTokenAsync(input.Email, input.Roles);
-					return Ok(new { token });
-				}
-				return Ok(new { message = "Successful!" });
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return BadRequest(new { message = "Something went wrong!" });
-			}
+			model.UserName ??= model.Email;
+			var user = _mapper.Map<ManageUserRequest, ApplicationUser>(model);
+			await _userService.CreateAsync(user, model.Password, model.Roles);
+
+			return Ok(new { message = "User created" });
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> GetDetails(string id)
 		{
-			try
-			{
-				var user = await _userService.GetUserByIdAsync(id);
-				return Ok(user);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex.Message);
-				return BadRequest(new { message = "Something went wrong!" });
-
-			}
+			var user = await _userService.GetByIdAsync(id);
+			return Ok(user);
 		}
 	}
 }
