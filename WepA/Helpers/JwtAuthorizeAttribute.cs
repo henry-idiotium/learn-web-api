@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using WepA.Models;
+using WepA.Models.Domains;
+using WepA.Models.Dtos;
 
-namespace WepA.Extensions.Helpers
+namespace WepA.Helpers.Attributes
 {
 	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
@@ -21,7 +22,7 @@ namespace WepA.Extensions.Helpers
 
 			// authorization
 			var user = (ApplicationUser)context.HttpContext.Items["ApplicationUser"];
-			if (user is null)
+			if (user == null)
 			{
 				context.Result = new JsonResult(new { message = "Unauthorized" })
 				{

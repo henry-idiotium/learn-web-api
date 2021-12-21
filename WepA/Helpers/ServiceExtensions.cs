@@ -1,15 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using WepA.Services;
+using WepA.Models.Domains;
+using WepA.Interfaces.Services;
 using WepA.Data;
-using WepA.Models;
+using System.Text;
+using System.Collections.Generic;
+using System;
+using Microsoft.OpenApi.Models;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using WepA.Interfaces.Repositories;
+using WepA.Data.Repositories;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
-namespace WepA.Extensions
+namespace WepA.Helpers
 {
 	public static class ServiceExtensions
 	{
@@ -32,7 +38,9 @@ namespace WepA.Extensions
 					options.SignIn.RequireConfirmedEmail = false;
 					options.SignIn.RequireConfirmedAccount = false;
 					options.SignIn.RequireConfirmedPhoneNumber = false;
-				}).AddEntityFrameworkStores<WepADbContext>();
+				})
+				.AddEntityFrameworkStores<WepADbContext>()
+				.AddTokenProvider<DataProtectorTokenProvider<ApplicationUser>>(TokenOptions.DefaultProvider);
 
 				services.Configure<IdentityOptions>(options =>
 				{
@@ -74,7 +82,6 @@ namespace WepA.Extensions
 							Scheme = "oauth2",
 							Name = "Bearer",
 							In = ParameterLocation.Header,
-
 						},
 						new List<string>()
 					}
@@ -95,6 +102,8 @@ namespace WepA.Extensions
 				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 			}).AddJwtBearer(options =>
 			{
+				options.RequireHttpsMetadata = true;
+				options.SaveToken = true;
 				options.TokenValidationParameters = new TokenValidationParameters
 				{
 					ValidateIssuerSigningKey = true,
@@ -105,8 +114,18 @@ namespace WepA.Extensions
 					ValidIssuers = validLocations,
 					ValidAudiences = validLocations,
 					IssuerSigningKey = new SymmetricSecurityKey(key),
+					ClockSkew = TimeSpan.FromMinutes(1)
 				};
 			});
+		}
+
+		public static void RegisterDIConfiguration(this IServiceCollection services)
+		{
+			services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IAccountService, AccountService>();
+			services.AddScoped<IEmailService, EmailService>();
+			services.AddScoped<IJwtService, JwtService>();
+			services.AddScoped<IUserRepository, UserRepository>();
 		}
 	}
 }
