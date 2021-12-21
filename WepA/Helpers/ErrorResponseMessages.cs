@@ -3,6 +3,7 @@ namespace WepA.Helpers.Messages
 	public static class ErrorResponseMessages
 	{
 		public const string ServerError = "Server error";
+		public const string GenericError = "Something went wrong";
 		public const string FailedVerifyEmail = "Failed to verify email";
 		public const string FailedLogin = "Username or password is incorrect";
 		public const string Unauthorized = "Unauthorized";

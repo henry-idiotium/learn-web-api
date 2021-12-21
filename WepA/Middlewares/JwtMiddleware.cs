@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
+using System.Net;
+using WepA.Helpers.Messages;
 
 namespace WepA.Middlewares
 {
@@ -31,6 +33,11 @@ namespace WepA.Middlewares
 				{
 					// Attach user to context on successful jwt validation
 					context.Items["ApplicationUser"] = await userService.GetByIdAsync(userId);
+				}
+				else
+				{
+					context.Response.Headers.Add("X-Log-Status-Code", ((int)HttpStatusCode.InternalServerError).ToString());
+					context.Response.Headers.Add("X-Log-Message", ErrorResponseMessages.Unauthorized);
 				}
 			}
 			catch { } // If jwt validation fails then do nothing

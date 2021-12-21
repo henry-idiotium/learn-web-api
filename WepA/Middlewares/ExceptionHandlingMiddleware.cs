@@ -47,23 +47,16 @@ namespace WepA.Middlewares
 
 		private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
 		{
-			var code = (int)HttpStatusCode.InternalServerError; // Internal Server Error by default
 			if (exception is HttpStatusException httpException)
-				code = (int)httpException.Status;
+			{
+				context.Response.Headers.Add("X-Log-Status-Code", httpException.Status.ToString());
+				context.Response.Headers.Add("X-Log-Message", exception.Message);
+			}
 
 			context.Response.ContentType = "application/json";
-			context.Response.StatusCode = code;
+			context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-			if (exception is HttpStatusException)
-				await context.Response.WriteAsync((new
-				{
-					message = exception.Message
-				}).ToString());
-			else
-				await context.Response.WriteAsync((new
-				{
-					message = ErrorResponseMessages.ServerError
-				}).ToString());
+			await context.Response.WriteAsync(new Response { Message = ErrorResponseMessages.GenericError }.ToString());
 		}
 	}
 }

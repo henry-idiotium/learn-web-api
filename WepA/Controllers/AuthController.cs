@@ -53,7 +53,7 @@ namespace WepA.Controllers
 			return Ok(new { message = "User Registered" });
 		}
 
-		[HttpPost("/{userId}/{code}")]
+		[HttpPost("{userId}/{code}")]
 		public async Task<IActionResult> ConfirmEmail(string userId, string code)
 		{
 			await _accountService.ConfirmEmailAsync(userId, code);
