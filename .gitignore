@@ -365,5 +365,8 @@ FodyWeavers.xsd
 # History folder for C# project
 .history/
 
-# vscode folder hidden configuration
+# vscode configuration
 .vscode/
+
+# kanbn - todo extension configuration
+.kanbn/
