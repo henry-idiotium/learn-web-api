@@ -1,8 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace WepA.Models
+namespace WepA.Models.Domains
 {
 	public class ApplicationUser : IdentityUser
 	{
@@ -19,5 +21,8 @@ namespace WepA.Models
 
 		[StringLength(250)]
 		public string Address { get; set; }
+
+		[JsonIgnore]
+		public List<RefreshToken> RefreshTokens { get; set; }
 	}
 }
