@@ -43,6 +43,17 @@ namespace WepA
 
 			// Provide specified key for JwtUtil class instance - Options pattern
 			services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
+			services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
+
+			services.AddFluentEmail(Configuration.GetValue<string>("EmailSettings:FromMail"))
+					.AddRazorRenderer(Directory.GetCurrentDirectory())
+					.AddSmtpSender(new SmtpClient
+					{
+						Host = Configuration.GetValue<string>("EmailSettings:Host"),
+						EnableSsl = Configuration.GetValue<bool>("EmailSettings:IsEnableSsl"),
+						Port = Configuration.GetValue<int>("EmailSettings:Port"),
+						DeliveryMethod = SmtpDeliveryMethod.Network
+					});
 
 			services.AddControllers();
 			services.SwaggerConfiguration();
@@ -74,6 +85,8 @@ namespace WepA
 
 			app.UseAuthentication();
 			app.UseAuthorization();
+
+			app.UseJwtMiddleware();
 
 			app.UseEndpoints(endpoints => endpoints.MapControllers());
 		}
