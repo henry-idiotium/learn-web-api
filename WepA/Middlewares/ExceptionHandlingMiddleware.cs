@@ -1,12 +1,13 @@
-using System;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using WepA.Helpers;
-using WepA.Helpers.Messages;
 using WepA.Models.Dtos;
+using WepA.Helpers.Messages;
+using WepA.Helpers;
+using System.Threading.Tasks;
+using System.Net;
+using System;
+using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
 
 namespace WepA.Middlewares
 {
@@ -47,16 +48,23 @@ namespace WepA.Middlewares
 
 		private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
 		{
+			var code = (int)HttpStatusCode.InternalServerError; // Internal Server Error by default
 			if (exception is HttpStatusException httpException)
 			{
+				code = (int)httpException.Status;
 				context.Response.Headers.Add("X-Log-Status-Code", httpException.Status.ToString());
 				context.Response.Headers.Add("X-Log-Message", exception.Message);
 			}
 
 			context.Response.ContentType = "application/json";
-			context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+			context.Response.StatusCode = code;
 
-			await context.Response.WriteAsync(new Response { Message = ErrorResponseMessages.GenericError }.ToString());
+			var response = JsonConvert.SerializeObject(new Response
+			{
+				Message = (exception.Message != null) && (exception is HttpStatusException) ?
+					exception.Message : ErrorResponseMessages.GenericError
+			});
+			await context.Response.WriteAsync(response);
 		}
 	}
 }
