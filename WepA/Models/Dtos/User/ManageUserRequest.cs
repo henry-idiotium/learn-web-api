@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace WepA.Models.Dtos.User
 {
 	public class ManageUserRequest
 	{
+		[JsonPropertyName("id")]
+		public string EncodedId { get; set; }
+
 		public string UserName { get; set; }
 
 		[Required]
