@@ -2,7 +2,6 @@ using WepA.Models.Dtos;
 using WepA.Models.Domains;
 using WepA.Interfaces.Services;
 using WepA.Helpers.Settings;
-using System.Text;
 using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Linq;
@@ -19,12 +18,17 @@ namespace WepA.Services
 {
 	public class JwtService : IJwtService
 	{
-		private readonly List<string> _validLocations = new(){ "https://localhost:5001", "https://localhost:5000" };
 		private readonly JwtSettings _jwtSettings;
-
+		private readonly byte[] _jwtSecret;
+		private readonly List<string> _validLocations = new()
+		{
+			"https://localhost:5001",
+			"https://localhost:5000"
+		};
 		public JwtService(IOptions<JwtSettings> jwtSettings)
 		{
 			_jwtSettings = jwtSettings.Value;
+			_jwtSecret = EncryptHelpers.EncodeASCII(_jwtSettings.Secret);
 		}
 
 		public AccessToken GenerateAccessToken(IEnumerable<Claim> claims)
@@ -37,7 +41,7 @@ namespace WepA.Services
 				// Expires = DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenExpiration),
 				Expires = DateTime.UtcNow.AddSeconds(5), // Testing
 				SigningCredentials = new SigningCredentials(
-					key: new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_jwtSettings.Secret)),
+					key: new SymmetricSecurityKey(_jwtSecret),
 					algorithm: SecurityAlgorithms.HmacSha256Signature)
 			};
 
@@ -52,9 +56,10 @@ namespace WepA.Services
 		public RefreshToken GenerateRefreshToken(string userId)
 		{
 			if (userId == null)
+			{
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-					ErrorResponseMessages.InvalidRequest);
-
+											  ErrorResponseMessages.InvalidRequest);
+			}
 			using var cryptoProvider = new RNGCryptoServiceProvider();
 			var randomBytes = new byte[64];
 			cryptoProvider.GetBytes(randomBytes);
@@ -76,7 +81,6 @@ namespace WepA.Services
 				var jwtToken = tokenHandler.ReadToken(token);
 				if (jwtToken is null) return null;
 
-				var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
 				var validationParameters = new TokenValidationParameters()
 				{
 					ValidateIssuerSigningKey = true,
@@ -86,7 +90,7 @@ namespace WepA.Services
 
 					ValidIssuers = _validLocations,
 					ValidAudiences = _validLocations,
-					IssuerSigningKey = new SymmetricSecurityKey(key)
+					IssuerSigningKey = new SymmetricSecurityKey(_jwtSecret)
 				};
 
 				var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
@@ -102,7 +106,6 @@ namespace WepA.Services
 		{
 			if (token is null) return null;
 			var tokenHandler = new JwtSecurityTokenHandler();
-			var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
 			try
 			{
 				tokenHandler.ValidateToken(token, new TokenValidationParameters
@@ -114,7 +117,7 @@ namespace WepA.Services
 
 					ValidIssuers = _validLocations,
 					ValidAudiences = _validLocations,
-					IssuerSigningKey = new SymmetricSecurityKey(key),
+					IssuerSigningKey = new SymmetricSecurityKey(_jwtSecret),
 					ClockSkew = TimeSpan.Zero
 				}, out SecurityToken validatedToken);
 

@@ -19,7 +19,7 @@ namespace WepA.Helpers
 {
 	public static class ServiceExtensions
 	{
-		public static void CorsConfiguration(this IServiceCollection services)
+		public static void AddCorsExt(this IServiceCollection services)
 		{
 			services.AddCors(o => o.AddPolicy("DevelopmentPolicy", builder =>
 				builder.AllowAnyMethod()
@@ -29,7 +29,7 @@ namespace WepA.Helpers
 						"https://localhost:5001")));
 		}
 
-		public static void IdentityConfiguration(this IServiceCollection services, bool isDevelopment)
+		public static void AddIdentityExt(this IServiceCollection services, bool isDevelopment)
 		{
 			if (isDevelopment)
 			{
@@ -54,7 +54,7 @@ namespace WepA.Helpers
 			}
 		}
 
-		public static void SwaggerConfiguration(this IServiceCollection services)
+		public static void AddSwaggerExt(this IServiceCollection services)
 		{
 			services.AddSwaggerGen(c =>
 			{
@@ -89,7 +89,7 @@ namespace WepA.Helpers
 			});
 		}
 
-		public static void AuthenticationConfiguration(this IServiceCollection services, string secret)
+		public static void AddAuthenticationExt(this IServiceCollection services, string secret)
 		{
 			var key = Encoding.ASCII.GetBytes(secret);
 			var validLocations = new List<string>{
@@ -119,7 +119,7 @@ namespace WepA.Helpers
 			});
 		}
 
-		public static void RegisterDIConfiguration(this IServiceCollection services)
+		public static void AddDIContainerExt(this IServiceCollection services)
 		{
 			services.AddScoped<IUserService, UserService>();
 			services.AddScoped<IAccountService, AccountService>();

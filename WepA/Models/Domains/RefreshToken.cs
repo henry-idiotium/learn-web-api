@@ -16,6 +16,8 @@ namespace WepA.Models.Domains
 		[Required]
 		[StringLength(100)]
 		public string Token { get; set; }
+
+		[Required]
 		public string UserId { get; set; }
 		public DateTime Expires { get; set; }
 		public DateTime Created { get; set; }

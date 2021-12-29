@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using System.Net;
 using WepA.Helpers.Messages;
+using WepA.Helpers;
 
 namespace WepA.Middlewares
 {
@@ -36,8 +37,8 @@ namespace WepA.Middlewares
 				}
 				else
 				{
-					context.Response.Headers.Add("X-Log-Status-Code", ((int)HttpStatusCode.InternalServerError).ToString());
-					context.Response.Headers.Add("X-Log-Message", ErrorResponseMessages.Unauthorized);
+					throw new HttpStatusException(HttpStatusCode.Unauthorized,
+						ErrorResponseMessages.Unauthorized);
 				}
 			}
 			catch { } // If jwt validation fails then do nothing

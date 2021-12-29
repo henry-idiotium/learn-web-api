@@ -2,8 +2,6 @@ using WepA.Middlewares;
 using WepA.Helpers.Settings;
 using WepA.Helpers;
 using WepA.Data;
-using System.Net.Mail;
-using System.IO;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -31,11 +29,11 @@ namespace WepA
 				options.UseSqlServer(Configuration.GetConnectionString("WepA")));
 
 			// service extensions
-			// services.AuthenticationConfiguration(Configuration.GetValue<string>("JwtSettings:Secret"));
-			services.IdentityConfiguration(CurrentEnvironment.IsDevelopment());
+			services.AddIdentityExt(CurrentEnvironment.IsDevelopment());
 			services.AddAutoMapper(typeof(Startup));
-			services.CorsConfiguration();
-			services.RegisterDIConfiguration();
+			services.AddCorsExt();
+			services.AddDIContainerExt();
+
 			// option-patterns
 			services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 			services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
@@ -51,7 +49,7 @@ namespace WepA
 					});
 
 			services.AddControllers();
-			services.SwaggerConfiguration();
+			services.AddSwaggerExt();
 		}
 
 		// Middlewares — This method gets called by the runtime. Use this method to configure the

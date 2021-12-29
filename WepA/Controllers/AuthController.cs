@@ -10,6 +10,7 @@ using WepA.Helpers;
 
 namespace WepA.Controllers
 {
+	[AllowAnonymous]
 	[ApiController]
 	[Route("api/[controller]/[action]")]
 	public class AuthController : ControllerBase
@@ -23,7 +24,6 @@ namespace WepA.Controllers
 			_mapper = mapper;
 		}
 
-		[AllowAnonymous]
 		[HttpPost]
 		public async Task<IActionResult> Login([FromBody] LoginRequest model)
 		{
@@ -35,7 +35,6 @@ namespace WepA.Controllers
 			return Ok(authenticateResponse);
 		}
 
-		[AllowAnonymous]
 		[HttpPost]
 		public async Task<IActionResult> Register([FromBody] RegisterRequest model)
 		{

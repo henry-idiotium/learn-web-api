@@ -44,16 +44,14 @@ namespace WepA.Services
 				lockoutOnFailure: false);
 			if (!result.Succeeded)
 			{
-				throw new HttpStatusException(
-					status: HttpStatusCode.Unauthorized,
-					message: ErrorResponseMessages.FailedLogin);
+				throw new HttpStatusException(HttpStatusCode.Unauthorized,
+											  ErrorResponseMessages.FailedLogin);
 			}
 			var user = await _userManager.FindByEmailAsync(account.Email);
 			if (!await _userManager.IsEmailConfirmedAsync(user))
 			{
-				throw new HttpStatusException(
-					status: HttpStatusCode.BadRequest,
-					message: ErrorResponseMessages.EmailNotVerify);
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.EmailNotVerify);
 			}
 
 			var claims = new List<Claim>
@@ -74,18 +72,16 @@ namespace WepA.Services
 			var userExists = _userService.ValidateUserExistence(user);
 			if (userExists)
 			{
-				throw new HttpStatusException(
-					status: HttpStatusCode.BadRequest,
-					message: ErrorResponseMessages.UserAlreadyExists);
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.UserAlreadyExists);
 			}
 
 			await _userManager.CreateAsync(user, password);
 			var newUser = await _userManager.FindByEmailAsync(user.Email);
 			if (newUser == null)
 			{
-				throw new HttpStatusException(
-					status: HttpStatusCode.BadRequest,
-					message: ErrorResponseMessages.InvalidRequest);
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.InvalidRequest);
 			}
 			var addRole = await _userManager.AddToRoleAsync(newUser, "customer");
 			if (!addRole.Succeeded)
@@ -102,30 +98,27 @@ namespace WepA.Services
 			await _userService.AddRefreshTokenAsync(newUser, refreshToken);
 		}
 
-		public async Task ConfirmEmailAsync(string userId, string code)
+		public async Task VerifyEmailAsync(string userId, string code)
 		{
 			if (userId == null || code == null)
 			{
-				throw new HttpStatusException(
-					status: HttpStatusCode.BadRequest,
-					message: ErrorResponseMessages.InvalidRequest);
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.InvalidRequest);
 			}
 
 			var user = await _userManager.FindByIdAsync(userId);
 			if (user == null)
 			{
-				throw new HttpStatusException(
-					status: HttpStatusCode.BadRequest,
-					message: ErrorResponseMessages.NotFoundUser);
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.NotFoundUser);
 			}
 
 			var token = EncryptHelpers.DecodeBase64Url(code);
 			var result = await _userManager.ConfirmEmailAsync(user, token);
 			if (!result.Succeeded)
 			{
-				throw new HttpStatusException(
-					status: HttpStatusCode.BadRequest,
-					message: ErrorResponseMessages.FailedVerifyEmail);
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.FailedVerifyEmail);
 			}
 		}
 	}
