@@ -8,6 +8,6 @@ namespace WepA.Interfaces.Services
 	{
 		Task<AuthenticateResponse> LoginAsync(LoginRequest account);
 		Task RegisterAsync(ApplicationUser user, string password);
-		Task ConfirmEmailAsync(string userId, string code);
+		Task VerifyEmailAsync(string userId, string code);
 	}
 }

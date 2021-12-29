@@ -37,16 +37,7 @@ namespace WepA
 			// option-patterns
 			services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
 			services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
-
-			services.AddFluentEmail(Configuration.GetValue<string>("EmailSettings:FromMail"))
-					.AddRazorRenderer(Directory.GetCurrentDirectory())
-					.AddSmtpSender(new SmtpClient
-					{
-						Host = Configuration.GetValue<string>("EmailSettings:Host"),
-						EnableSsl = Configuration.GetValue<bool>("EmailSettings:IsEnableSsl"),
-						Port = Configuration.GetValue<int>("EmailSettings:Port"),
-						DeliveryMethod = SmtpDeliveryMethod.Network
-					});
+			services.Configure<SendGridSettings>(Configuration.GetSection("ExternalProviders:SendGrid"));
 
 			services.AddControllers();
 			services.AddSwaggerExt();

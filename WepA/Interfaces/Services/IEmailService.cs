@@ -6,6 +6,6 @@ namespace WepA.Interfaces.Services
 {
 	public interface IEmailService
 	{
-		Task SendConfirmEmailAsync(ApplicationUser user, string code);
+		Task SendConfirmEmailAsync(ApplicationUser user, string encodedConfirmString);
 	}
 }
