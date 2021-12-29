@@ -1,14 +1,17 @@
 using WepA.Models.Dtos.User;
 using WepA.Models.Domains;
 using WepA.Interfaces.Services;
+using WepA.Helpers.Attributes;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
-using WepA.Helpers.Attributes;
+using WepA.Models;
+using Microsoft.AspNetCore.Authorization;
+using WepA.Helpers;
 
 namespace WepA.Controllers
 {
+	[JwtAuthorize]
 	[ApiController]
 	[Route("api/[controller]/[action]")]
 	public class UserController : ControllerBase
@@ -22,19 +25,9 @@ namespace WepA.Controllers
 			_mapper = mapper;
 		}
 
-		[JwtAuthorize]
-		[HttpGet]
-		public IActionResult GetAll()
-		{
-			var users = _mapper
-				.Map<IEnumerable<ApplicationUser>, IEnumerable<UserDetailsResponse>>(_userService.GetAll());
-			return Ok(users);
-		}
-
 		[HttpPost]
 		public async Task<IActionResult> Create([FromBody] ManageUserRequest model)
 		{
-
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			model.UserName ??= model.Email;
@@ -45,10 +38,19 @@ namespace WepA.Controllers
 		}
 
 		[HttpGet]
-		public async Task<IActionResult> GetDetails(string id)
+		public async Task<IActionResult> GetDetails(string encodedUserId)
 		{
-			var user = await _userService.GetByIdAsync(id);
+			var userId = EncryptHelpers.DecodeBase64Url(encodedUserId);
+			var user = await _userService.GetByIdAsync(userId);
 			return Ok(user);
+		}
+
+		[AllowAnonymous]
+		[HttpGet]
+		public IActionResult Search([FromQuery] Search model)
+		{
+			var users = _userService.GetSpecificUsers(model);
+			return Ok(users);
 		}
 	}
 }

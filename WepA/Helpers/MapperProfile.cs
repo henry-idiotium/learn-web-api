@@ -11,7 +11,8 @@ namespace WepA.Helpers
 		{
 			CreateMap<RegisterRequest, ApplicationUser>();
 			CreateMap<ManageUserRequest, ApplicationUser>();
-			CreateMap<ApplicationUser, UserDetailsResponse>();
+			CreateMap<ApplicationUser, UserDetailsResponse>()
+				.ForMember(d => d.NakedId, opt => opt.MapFrom(s => s.Id));
 		}
 	}
 }

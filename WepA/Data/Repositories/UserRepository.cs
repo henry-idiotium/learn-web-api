@@ -1,19 +1,26 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WepA.Helpers.Settings;
+using WepA.Helpers.LinqExtension;
 using WepA.Interfaces.Repositories;
+using WepA.Models;
 using WepA.Models.Domains;
-
 namespace WepA.Data.Repositories
 {
 	public class UserRepository : IUserRepository
 	{
 		private readonly WepADbContext _context;
 
-		public UserRepository(WepADbContext context)
+		public UserRepository(WepADbContext context) => _context = context;
+
+		public IEnumerable<ApplicationUser> GetUsers(Search model)
 		{
-			_context = context;
+			var users = _context.Users.Filter(model.Filter, model.FilterBy)
+									  .OrderByMultiple(model.OrderBy)
+									  .Paginate(model.Page, model.PageSize)
+									  .ToList();
+			return users;
 		}
 
 		public async Task<bool> AddRefreshTokenAsync(ApplicationUser user, RefreshToken refreshToken)
