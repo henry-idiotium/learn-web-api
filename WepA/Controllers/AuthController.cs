@@ -3,14 +3,10 @@ using WepA.Models.Domains;
 using WepA.Interfaces.Services;
 using System.Threading.Tasks;
 using System.Linq;
-using System;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using WepA.Helpers;
-using WepA.Helpers.Messages;
 
 namespace WepA.Controllers
 {
@@ -53,11 +49,13 @@ namespace WepA.Controllers
 			return Ok(new { message = "User Registered" });
 		}
 
-		[HttpPost("{userId}/{code}")]
-		public async Task<IActionResult> ConfirmEmail(string userId, string code)
+		[HttpGet("{userId}/{code}")]
+		public async Task<IActionResult> VerifyEmail(string encodedUserId, string encodedConfirmString)
 		{
-			await _accountService.ConfirmEmailAsync(userId, code);
-			return Ok(new { message = "Email confirmed" });
+			var userId = EncryptHelpers.DecodeBase64Url(encodedUserId);
+			var code = EncryptHelpers.DecodeBase64Url(encodedConfirmString);
+			await _accountService.VerifyEmailAsync(userId, code);
+			return Ok(new { message = "Email Verified" });
 		}
 	}
 }

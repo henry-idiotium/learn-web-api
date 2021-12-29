@@ -10,8 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
-using System.IdentityModel.Tokens.Jwt;
-using System.Collections.Generic;
 
 namespace WepA
 {
@@ -29,8 +27,9 @@ namespace WepA
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			JwtSecurityTokenHandler.DefaultInboundClaimTypeMap = new Dictionary<string, string>();
-			services.AddDbContext<WepADbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("WepA")));
+			services.AddDbContext<WepADbContext>(options =>
+				options.UseSqlServer(Configuration.GetConnectionString("WepA")));
+
 			// service extensions
 			// services.AuthenticationConfiguration(Configuration.GetValue<string>("JwtSettings:Secret"));
 			services.IdentityConfiguration(CurrentEnvironment.IsDevelopment());

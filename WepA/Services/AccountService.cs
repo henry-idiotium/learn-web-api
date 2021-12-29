@@ -4,14 +4,11 @@ using WepA.Interfaces.Services;
 using WepA.Helpers.Messages;
 using WepA.Helpers;
 using System.Threading.Tasks;
-using System.Text;
 using System.Security.Claims;
 using System.Net;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Identity;
-using WepA.Interfaces.Repositories;
 
 namespace WepA.Services
 {
@@ -98,7 +95,7 @@ namespace WepA.Services
 					ErrorResponseMessages.ServerError);
 			}
 			var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-			var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(confirmToken));
+			var code = EncryptHelpers.EncodeBase64Url(confirmToken);
 			await _emailService.SendConfirmEmailAsync(newUser, code);
 
 			var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
@@ -122,7 +119,7 @@ namespace WepA.Services
 					message: ErrorResponseMessages.NotFoundUser);
 			}
 
-			var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+			var token = EncryptHelpers.DecodeBase64Url(code);
 			var result = await _userManager.ConfirmEmailAsync(user, token);
 			if (!result.Succeeded)
 			{
