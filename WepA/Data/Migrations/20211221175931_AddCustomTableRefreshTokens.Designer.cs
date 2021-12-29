@@ -10,7 +10,7 @@ using WepA.Data;
 namespace WepA.Data.Migrations
 {
     [DbContext(typeof(WepADbContext))]
-    [Migration("20211217094050_AddCustomTableRefreshTokens")]
+    [Migration("20211221175931_AddCustomTableRefreshTokens")]
     partial class AddCustomTableRefreshTokens
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -294,10 +294,6 @@ namespace WepA.Data.Migrations
                                 .HasColumnType("int")
                                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                            b1.Property<string>("ApplicationUserId")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(450)");
-
                             b1.Property<DateTime>("Created")
                                 .HasColumnType("datetime2");
 
@@ -321,16 +317,19 @@ namespace WepA.Data.Migrations
                                 .HasColumnType("nvarchar(100)");
 
                             b1.Property<string>("UserId")
-                                .HasColumnType("nvarchar(max)");
+                                .IsRequired()
+                                .HasColumnType("nvarchar(450)");
 
                             b1.HasKey("Id");
 
-                            b1.HasIndex("ApplicationUserId");
+                            b1.HasIndex("UserId");
 
                             b1.ToTable("RefreshTokens");
 
-                            b1.WithOwner()
-                                .HasForeignKey("ApplicationUserId");
+                            b1.WithOwner("ApplicationUser")
+                                .HasForeignKey("UserId");
+
+                            b1.Navigation("ApplicationUser");
                         });
 
                     b.Navigation("RefreshTokens");
