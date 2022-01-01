@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using System;
-using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
 
-namespace WepA.Models.Domains
+namespace WepA.Models.Entities
 {
 	public class ApplicationUser : IdentityUser
 	{

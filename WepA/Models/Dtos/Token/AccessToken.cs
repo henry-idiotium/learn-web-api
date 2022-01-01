@@ -1,4 +1,4 @@
-namespace WepA.Models.Dtos
+namespace WepA.Models.Dtos.Token
 {
 	public class AccessToken
 	{

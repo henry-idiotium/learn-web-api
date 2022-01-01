@@ -1,4 +1,4 @@
-namespace WepA.Models.Dtos.Token
+namespace WepA.Models.Dtos.Token.Token
 {
 	public class TokenRotateRequest
 	{

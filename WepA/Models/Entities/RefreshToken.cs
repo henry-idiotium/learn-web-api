@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
-namespace WepA.Models.Domains
+namespace WepA.Models.Entities
 {
 	[Owned]
 	public class RefreshToken

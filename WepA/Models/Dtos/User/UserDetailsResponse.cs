@@ -1,23 +1,29 @@
 using System;
 using System.Text.Json.Serialization;
-using AutoMapper.Configuration.Annotations;
+using Sieve.Attributes;
 
-namespace WepA.Models.Dtos.User
+namespace WepA.Models.Dtos.Token.User
 {
 	public class UserDetailsResponse
 	{
-		[JsonIgnore]
-		public string NakedId { get; set; }
-
-		[Ignore]
 		[JsonPropertyName("id")]
 		public string EncodedId { get; set; }
 
+		[Sieve(CanFilter = true, CanSort = true)]
 		public string UserName { get; set; }
+
+		[Sieve(CanFilter = true, CanSort = true)]
 		public string Email { get; set; }
+
+		[Sieve(CanFilter = true, CanSort = true)]
 		public string FirstName { get; set; }
+
+		[Sieve(CanFilter = true, CanSort = true)]
 		public string LastName { get; set; }
+
+		[Sieve(CanFilter = true, CanSort = true)]
 		public string Address { get; set; }
+
 		public DateTime? DateOfBirth { get; set; }
 	}
 }

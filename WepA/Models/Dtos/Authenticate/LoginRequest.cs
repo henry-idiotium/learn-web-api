@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace WepA.Models.Dtos
+namespace WepA.Models.Dtos.Token
 {
 	public class LoginRequest
 	{

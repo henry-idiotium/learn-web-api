@@ -1,6 +1,6 @@
-using WepA.Models.Domains;
+using WepA.Models.Entities;
 
-namespace WepA.Models.Dtos
+namespace WepA.Models.Dtos.Token
 {
 	public class AuthenticateResponse
 	{
