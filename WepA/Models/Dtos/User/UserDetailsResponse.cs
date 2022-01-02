@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
+using Mapster;
 using Sieve.Attributes;
 
 namespace WepA.Models.Dtos.Token.User

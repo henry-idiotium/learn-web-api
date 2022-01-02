@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Mapster;
 
 namespace WepA.Models.Dtos.Token
 {
@@ -20,9 +21,11 @@ namespace WepA.Models.Dtos.Token
 		public string LastName { get; set; }
 
 		[Required]
+		[AdaptIgnore]
 		public string Password { get; set; }
 
 		[Required]
+		[AdaptIgnore]
 		public string ConfirmPassword { get; set; }
 	}
 }

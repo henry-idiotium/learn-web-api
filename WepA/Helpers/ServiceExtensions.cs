@@ -54,6 +54,17 @@ namespace WepA.Helpers
 			}
 		}
 
+		public static void AddMapsterExt(this IServiceCollection services)
+		{
+			var config = new TypeAdapterConfig();
+
+			config.NewConfig<ApplicationUser, UserDetailsResponse>()
+				  .Map(dest => dest.EncodedId, src => EncryptHelpers.EncodeBase64Url(src.Id));
+
+			services.AddSingleton(config);
+			services.AddScoped<IMapper, ServiceMapper>();
+		}
+
 		public static void AddSwaggerExt(this IServiceCollection services)
 		{
 			services.AddSwaggerGen(c =>

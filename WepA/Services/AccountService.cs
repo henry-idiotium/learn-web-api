@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 using System.Security.Claims;
 using System.Net;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
 
 namespace WepA.Services
 {
 	public class AccountService : IAccountService
 	{
+		private readonly IMapper _mapper;
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly UserManager<ApplicationUser> _userManager;
 		private readonly ILogger _logger;
@@ -22,6 +23,7 @@ namespace WepA.Services
 		private readonly IJwtService _jwtService;
 
 		public AccountService(
+			IMapper mapper,
 			SignInManager<ApplicationUser> signInManager,
 			UserManager<ApplicationUser> userManager,
 			IEmailService emailService,
@@ -33,6 +35,7 @@ namespace WepA.Services
 			_userManager = userManager;
 			_emailService = emailService;
 			_jwtService = jwtService;
+			_mapper = mapper;
 			_userService = userService;
 			_logger = logger;
 		}
@@ -69,9 +72,8 @@ namespace WepA.Services
 
 		public async Task RegisterAsync(ApplicationUser user, string password)
 		{
-			var userExists = _userService.ValidateUserExistence(user);
-			if (userExists)
-			{
+			model.UserName ??= model.Email;
+			var user = _mapper.Map<ApplicationUser>(model);
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.UserAlreadyExists);
 			}

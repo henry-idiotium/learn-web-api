@@ -16,12 +16,10 @@ namespace WepA.Controllers
 	public class AuthController : ControllerBase
 	{
 		private readonly IAccountService _accountService;
-		private readonly IMapper _mapper;
 
-		public AuthController(IAccountService accountService, IMapper mapper)
+		public AuthController(IAccountService accountService)
 		{
 			_accountService = accountService;
-			_mapper = mapper;
 		}
 
 		[HttpPost]
@@ -41,9 +39,7 @@ namespace WepA.Controllers
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState.SelectMany(x => x.Value.Errors));
 
-			model.UserName ??= model.Email;
-			var user = _mapper.Map<RegisterRequest, ApplicationUser>(model);
-			await _accountService.RegisterAsync(user, model.Password);
+			await _accountService.RegisterAsync(model);
 
 			return Ok(new { message = "User Registered" });
 		}

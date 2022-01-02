@@ -3,9 +3,6 @@ using WepA.Models.Domains;
 using WepA.Interfaces.Services;
 using WepA.Helpers.Attributes;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
-using WepA.Models;
 using Microsoft.AspNetCore.Authorization;
 using WepA.Helpers;
 
@@ -17,23 +14,17 @@ namespace WepA.Controllers
 	public class UserController : ControllerBase
 	{
 		private readonly IUserService _userService;
-		private readonly IMapper _mapper;
 
-		public UserController(IUserService userService, IMapper mapper)
+		public UserController(IUserService userService)
 		{
 			_userService = userService;
-			_mapper = mapper;
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> Create([FromBody] ManageUserRequest model)
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
-
-			model.UserName ??= model.Email;
-			var user = _mapper.Map<ManageUserRequest, ApplicationUser>(model);
-			await _userService.CreateAsync(user, model.Password, model.Roles);
-
+			await _userService.CreateAsync(model);
 			return Ok(new { message = "User created" });
 		}
 
