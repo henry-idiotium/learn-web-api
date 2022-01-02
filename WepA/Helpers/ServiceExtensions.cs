@@ -1,24 +1,56 @@
-using WepA.Services;
-using WepA.Models.Domains;
-using WepA.Interfaces.Services;
-using WepA.Data;
-using System.Text;
-using System.Collections.Generic;
 using System;
-using Microsoft.OpenApi.Models;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using System.Text;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using WepA.Interfaces.Repositories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Sieve.Services;
+using WepA.Data;
 using WepA.Data.Repositories;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+using WepA.Interfaces.Repositories;
+using WepA.Interfaces.Services;
+using WepA.Models.Dtos.User;
+using WepA.Models.Entities;
+using WepA.Services;
 
 namespace WepA.Helpers
 {
 	public static class ServiceExtensions
 	{
+		public static void AddAuthenticationExt(this IServiceCollection services, string secret)
+		{
+			var key = Encoding.ASCII.GetBytes(secret);
+			var validLocations = new List<string>{
+				"https://localhost:5001",
+				"https://localhost:5000"
+			};
+			services.AddAuthentication(options =>
+			{
+				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			}).AddJwtBearer(options =>
+			{
+				options.RequireHttpsMetadata = true;
+				options.SaveToken = true;
+				options.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuerSigningKey = true,
+					ValidateIssuer = true,
+					ValidateAudience = true,
+					ValidateLifetime = true,
+
+					ValidIssuers = validLocations,
+					ValidAudiences = validLocations,
+					IssuerSigningKey = new SymmetricSecurityKey(key),
+					ClockSkew = TimeSpan.FromMinutes(1)
+				};
+			});
+		}
+
 		public static void AddCorsExt(this IServiceCollection services)
 		{
 			services.AddCors(o => o.AddPolicy("DevelopmentPolicy", builder =>
@@ -27,6 +59,16 @@ namespace WepA.Helpers
 					.WithOrigins(
 						"https://localhost:5000",
 						"https://localhost:5001")));
+		}
+
+		public static void AddDIContainerExt(this IServiceCollection services)
+		{
+			services.AddScoped<SieveProcessor>();
+			services.AddScoped<IUserService, UserService>();
+			services.AddScoped<IAccountService, AccountService>();
+			services.AddScoped<IEmailService, EmailService>();
+			services.AddScoped<IJwtService, JwtService>();
+			services.AddScoped<IUserRepository, UserRepository>();
 		}
 
 		public static void AddIdentityExt(this IServiceCollection services, bool isDevelopment)
@@ -98,45 +140,6 @@ namespace WepA.Helpers
 					}
 				});
 			});
-		}
-
-		public static void AddAuthenticationExt(this IServiceCollection services, string secret)
-		{
-			var key = Encoding.ASCII.GetBytes(secret);
-			var validLocations = new List<string>{
-				"https://localhost:5001",
-				"https://localhost:5000"
-			};
-			services.AddAuthentication(options =>
-			{
-				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-			}).AddJwtBearer(options =>
-			{
-				options.RequireHttpsMetadata = true;
-				options.SaveToken = true;
-				options.TokenValidationParameters = new TokenValidationParameters
-				{
-					ValidateIssuerSigningKey = true,
-					ValidateIssuer = true,
-					ValidateAudience = true,
-					ValidateLifetime = true,
-
-					ValidIssuers = validLocations,
-					ValidAudiences = validLocations,
-					IssuerSigningKey = new SymmetricSecurityKey(key),
-					ClockSkew = TimeSpan.FromMinutes(1)
-				};
-			});
-		}
-
-		public static void AddDIContainerExt(this IServiceCollection services)
-		{
-			services.AddScoped<IUserService, UserService>();
-			services.AddScoped<IAccountService, AccountService>();
-			services.AddScoped<IEmailService, EmailService>();
-			services.AddScoped<IJwtService, JwtService>();
-			services.AddScoped<IUserRepository, UserRepository>();
 		}
 	}
 }
