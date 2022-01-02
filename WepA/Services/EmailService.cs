@@ -1,14 +1,14 @@
-using WepA.Models.Domains;
-using WepA.Interfaces.Services;
+using System.Net;
 using System.Threading.Tasks;
-using SendGrid;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
-using WepA.Helpers.Settings;
+using Microsoft.Extensions.Options;
+using SendGrid;
 using SendGrid.Helpers.Mail;
 using WepA.Helpers;
-using System.Net;
-using WepA.Helpers.Messages;
+using WepA.Helpers.ResponseMessages;
+using WepA.Helpers.Settings;
+using WepA.Interfaces.Services;
+using WepA.Models.Entities;
 
 namespace WepA.Services
 {
