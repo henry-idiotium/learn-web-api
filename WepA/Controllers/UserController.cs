@@ -1,10 +1,14 @@
-using WepA.Models.Dtos.User;
-using WepA.Models.Domains;
-using WepA.Interfaces.Services;
-using WepA.Helpers.Attributes;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Sieve.Models;
 using WepA.Helpers;
+using WepA.Helpers.Attributes;
+using WepA.Helpers.ResponseMessages;
+using WepA.Interfaces.Services;
+using WepA.Models.Dtos.Common;
+using WepA.Models.Dtos.User;
 
 namespace WepA.Controllers
 {
@@ -21,11 +25,11 @@ namespace WepA.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Create([FromBody] ManageUserRequest model)
+		public async Task<IActionResult> Create([FromBody] CreateUserRequest model)
 		{
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 			await _userService.CreateAsync(model);
-			return Ok(new { message = "User created" });
+			return Ok(new GenericResponse(SuccessResponseMessages.UserRegistered));
 		}
 
 		[HttpGet]
@@ -33,15 +37,15 @@ namespace WepA.Controllers
 		{
 			var userId = EncryptHelpers.DecodeBase64Url(encodedUserId);
 			var user = await _userService.GetByIdAsync(userId);
-			return Ok(user);
+			return Ok(new GenericResponse().For(user, SuccessResponseMessages.Generic));
 		}
 
 		[AllowAnonymous]
 		[HttpGet]
-		public IActionResult Search([FromQuery] Search model)
+		public IActionResult GetList([FromQuery] SieveModel model)
 		{
-			var users = _userService.GetSpecificUsers(model);
-			return Ok(users);
+			var users = _userService.GetList(model);
+			return Ok(new GenericResponse().For(users, SuccessResponseMessages.Generic));
 		}
 	}
 }

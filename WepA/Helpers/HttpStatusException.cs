@@ -6,8 +6,6 @@ namespace WepA.Helpers
 {
 	public class HttpStatusException : Exception
 	{
-		public HttpStatusCode Status { get; private set; }
-
 		public HttpStatusException(HttpStatusCode status, string message = null) : base(message)
 		{
 			Status = status;
@@ -18,5 +16,7 @@ namespace WepA.Helpers
 		{
 			Status = status;
 		}
+
+		public HttpStatusCode Status { get; private set; }
 	}
 }

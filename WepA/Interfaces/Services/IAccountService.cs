@@ -1,5 +1,4 @@
-using WepA.Models.Dtos;
-using WepA.Models.Domains;
+using WepA.Models.Dtos.Token;
 using System.Threading.Tasks;
 
 namespace WepA.Interfaces.Services
@@ -7,7 +6,7 @@ namespace WepA.Interfaces.Services
 	public interface IAccountService
 	{
 		Task<AuthenticateResponse> LoginAsync(LoginRequest account);
-		Task RegisterAsync(ApplicationUser user, string password);
-		Task VerifyEmailAsync(string userId, string code);
+		Task RegisterAsync(RegisterRequest model);
+		Task VerifyEmailAsync(string userId, string token);
 	}
 }

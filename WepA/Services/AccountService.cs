@@ -1,43 +1,44 @@
-using WepA.Models.Dtos;
-using WepA.Models.Domains;
-using WepA.Interfaces.Services;
-using WepA.Helpers.Messages;
-using WepA.Helpers;
-using System.Threading.Tasks;
-using System.Security.Claims;
-using System.Net;
 using System.Collections.Generic;
+using System.Net;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using WepA.Helpers;
+using WepA.Helpers.ResponseMessages;
+using WepA.Interfaces.Services;
+using WepA.Models.Dtos.Token;
+using WepA.Models.Entities;
 
 namespace WepA.Services
 {
 	public class AccountService : IAccountService
 	{
+		private readonly IEmailService _emailService;
+		private readonly IJwtService _jwtService;
+		private readonly ILogger _logger;
 		private readonly IMapper _mapper;
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly UserManager<ApplicationUser> _userManager;
-		private readonly ILogger _logger;
 		private readonly IUserService _userService;
-		private readonly IEmailService _emailService;
-		private readonly IJwtService _jwtService;
 
 		public AccountService(
+			IEmailService emailService,
+			IJwtService jwtService,
+			ILogger<AccountService> logger,
 			IMapper mapper,
 			SignInManager<ApplicationUser> signInManager,
 			UserManager<ApplicationUser> userManager,
-			IEmailService emailService,
-			IJwtService jwtService,
-			IUserService userService,
-			ILogger<AccountService> logger)
+			IUserService userService)
 		{
-			_signInManager = signInManager;
-			_userManager = userManager;
 			_emailService = emailService;
 			_jwtService = jwtService;
-			_mapper = mapper;
-			_userService = userService;
 			_logger = logger;
+			_mapper = mapper;
+			_signInManager = signInManager;
+			_userManager = userManager;
+			_userService = userService;
 		}
 
 		public async Task<AuthenticateResponse> LoginAsync(LoginRequest account)
@@ -70,58 +71,55 @@ namespace WepA.Services
 			return new AuthenticateResponse(accessToken, refreshToken.Token);
 		}
 
-		public async Task RegisterAsync(ApplicationUser user, string password)
+		public async Task RegisterAsync(RegisterRequest model)
 		{
+			if (model.Password != model.ConfirmPassword)
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.PasswordNotMatch);
+
 			model.UserName ??= model.Email;
 			var user = _mapper.Map<ApplicationUser>(model);
+
+			if (_userService.ValidateExistence(user) || model.Password != model.ConfirmPassword)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.UserAlreadyExists);
-			}
 
-			await _userManager.CreateAsync(user, password);
-			var newUser = await _userManager.FindByEmailAsync(user.Email);
-			if (newUser == null)
-			{
+			var createUser = await _userManager.CreateAsync(user, model.Password);
+			if (!createUser.Succeeded)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.InvalidRequest);
-			}
-			var addRole = await _userManager.AddToRoleAsync(newUser, "customer");
+
+			var addRole = await _userManager.AddToRoleAsync(user, "customer");
 			if (!addRole.Succeeded)
 			{
-				_logger.LogError($"Failed to add role to user {newUser.Email}", addRole.Errors);
+				_logger.LogError($"Failed to add role to user {user.Email}", addRole.Errors);
 				throw new HttpStatusException(HttpStatusCode.InternalServerError,
-					ErrorResponseMessages.ServerError);
+											  ErrorResponseMessages.ServerError);
 			}
-			var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-			var code = EncryptHelpers.EncodeBase64Url(confirmToken);
-			await _emailService.SendConfirmEmailAsync(newUser, code);
+
+			var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+			var encodedEmailToken = EncryptHelpers.EncodeBase64Url(confirmEmailToken);
+			await _emailService.SendConfirmEmailAsync(user, encodedEmailToken);
 
 			var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
-			await _userService.AddRefreshTokenAsync(newUser, refreshToken);
+			await _userService.AddRefreshTokenAsync(user, refreshToken);
 		}
 
-		public async Task VerifyEmailAsync(string userId, string code)
+		public async Task VerifyEmailAsync(string userId, string token)
 		{
-			if (userId == null || code == null)
-			{
+			if (userId == null || token == null)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.InvalidRequest);
-			}
 
 			var user = await _userManager.FindByIdAsync(userId);
 			if (user == null)
-			{
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.NotFoundUser);
-			}
 
-			var token = EncryptHelpers.DecodeBase64Url(code);
 			var result = await _userManager.ConfirmEmailAsync(user, token);
 			if (!result.Succeeded)
-			{
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.FailedVerifyEmail);
-			}
 		}
 	}
 }

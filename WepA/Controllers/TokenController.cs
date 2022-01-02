@@ -1,12 +1,14 @@
-using WepA.Models.Dtos.Token;
-using WepA.Interfaces.Services;
-using WepA.Helpers.Messages;
-using WepA.Helpers.Attributes;
-using WepA.Helpers;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Net;
-using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using WepA.Helpers;
+using WepA.Helpers.Attributes;
+using WepA.Helpers.ResponseMessages;
+using WepA.Interfaces.Services;
+using WepA.Models.Dtos.Common;
+using WepA.Models.Dtos.Token;
 
 namespace WepA.Controllers
 {
@@ -22,25 +24,27 @@ namespace WepA.Controllers
 			_userService = userService;
 		}
 
+		[HttpGet]
+		public IActionResult Revoke(string refreshToken)
+		{
+			if (string.IsNullOrEmpty(refreshToken))
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.InvalidRefreshToken);
+
+			_userService.RevokeRefreshToken(refreshToken);
+			return Ok(new GenericResponse(SuccessResponseMessages.TokenRevoked));
+		}
+
 		[AllowAnonymous]
 		[HttpPost]
 		public async Task<IActionResult> Rotate([FromBody] TokenRotateRequest model)
 		{
 			if (model.AccessToken == null || model.RefreshToken == null)
-				throw new HttpStatusException(HttpStatusCode.BadRequest, ErrorResponseMessages.InvalidRequest);
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.InvalidRequest);
 
 			var response = await _userService.RotateTokensAsync(model);
-			return Ok(response);
-		}
-
-		[HttpGet]
-		public IActionResult Revoke(string refreshToken)
-		{
-			if (string.IsNullOrEmpty(refreshToken))
-				throw new HttpStatusException(HttpStatusCode.BadRequest, ErrorResponseMessages.InvalidRefreshToken);
-
-			_userService.RevokeRefreshToken(refreshToken);
-			return Ok(new { message = "Token revoked" });
+			return Ok(new GenericResponse().For(response, SuccessResponseMessages.Generic));
 		}
 	}
 }

@@ -1,13 +1,13 @@
-using WepA.Models.Dtos;
-using WepA.Helpers.Messages;
-using WepA.Helpers;
-using System.Threading.Tasks;
-using System.Net;
 using System;
-using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Http;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using WepA.Helpers;
+using WepA.Helpers.ResponseMessages;
+using WepA.Models.Dtos.Common;
 
 namespace WepA.Middlewares
 {
@@ -21,8 +21,8 @@ namespace WepA.Middlewares
 
 	public class HttpStatusExceptionHandlerMiddleware
 	{
-		private readonly RequestDelegate _next;
 		private readonly ILogger _logger;
+		private readonly RequestDelegate _next;
 
 		public HttpStatusExceptionHandlerMiddleware(RequestDelegate next,
 			ILogger<HttpStatusExceptionHandlerMiddleware> logger)
@@ -59,11 +59,12 @@ namespace WepA.Middlewares
 			context.Response.ContentType = "application/json";
 			context.Response.StatusCode = code;
 
-			var response = JsonConvert.SerializeObject(new Response
-			{
-				Message = (exception.Message != null) && (exception is HttpStatusException) ?
-					exception.Message : ErrorResponseMessages.GenericError
-			});
+			var response = JsonConvert.SerializeObject(new GenericResponse(
+				message: (exception.Message != null) && (exception is HttpStatusException) ?
+						  exception.Message : ErrorResponseMessages.UnknownError,
+				isSuccess: false
+			));
+
 			await context.Response.WriteAsync(response);
 		}
 	}

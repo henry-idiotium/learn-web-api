@@ -1,25 +1,25 @@
-using WepA.Models.Dtos;
-using WepA.Models.Domains;
-using WepA.Interfaces.Services;
-using WepA.Helpers.Settings;
-using System.Security.Cryptography;
-using System.Security.Claims;
-using System.Linq;
-using System.IdentityModel.Tokens.Jwt;
-using System.Collections.Generic;
 using System;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Options;
-using WepA.Helpers;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net;
-using WepA.Helpers.Messages;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using WepA.Helpers;
+using WepA.Helpers.ResponseMessages;
+using WepA.Helpers.Settings;
+using WepA.Interfaces.Services;
+using WepA.Models.Dtos.Token;
+using WepA.Models.Entities;
 
 namespace WepA.Services
 {
 	public class JwtService : IJwtService
 	{
-		private readonly JwtSettings _jwtSettings;
 		private readonly byte[] _jwtSecret;
+		private readonly JwtSettings _jwtSettings;
 		private readonly List<string> _validLocations = new()
 		{
 			"https://localhost:5001",

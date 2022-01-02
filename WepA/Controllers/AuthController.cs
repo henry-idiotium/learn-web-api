@@ -1,12 +1,12 @@
-using WepA.Models.Dtos;
-using WepA.Models.Domains;
-using WepA.Interfaces.Services;
-using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using WepA.Helpers;
+using WepA.Helpers.ResponseMessages;
+using WepA.Interfaces.Services;
+using WepA.Models.Dtos.Common;
+using WepA.Models.Dtos.Token;
 
 namespace WepA.Controllers
 {
@@ -30,7 +30,7 @@ namespace WepA.Controllers
 
 			var authenticateResponse = await _accountService.LoginAsync(model);
 
-			return Ok(authenticateResponse);
+			return Ok(new GenericResponse().For(authenticateResponse, SuccessResponseMessages.Generic));
 		}
 
 		[HttpPost]
@@ -41,16 +41,16 @@ namespace WepA.Controllers
 
 			await _accountService.RegisterAsync(model);
 
-			return Ok(new { message = "User Registered" });
+			return Ok(new GenericResponse(SuccessResponseMessages.UserRegistered));
 		}
 
 		[HttpGet("{userId}/{code}")]
-		public async Task<IActionResult> VerifyEmail(string encodedUserId, string encodedConfirmString)
+		public async Task<IActionResult> VerifyEmail(string userId, string code)
 		{
-			var userId = EncryptHelpers.DecodeBase64Url(encodedUserId);
-			var code = EncryptHelpers.DecodeBase64Url(encodedConfirmString);
-			await _accountService.VerifyEmailAsync(userId, code);
-			return Ok(new { message = "Email Verified" });
+			var decodedUserId = EncryptHelpers.DecodeBase64Url(userId);
+			var decodedConfirmString = EncryptHelpers.DecodeBase64Url(code);
+			await _accountService.VerifyEmailAsync(decodedUserId, decodedConfirmString);
+			return Ok(new GenericResponse(SuccessResponseMessages.EmailVerified));
 		}
 	}
 }
