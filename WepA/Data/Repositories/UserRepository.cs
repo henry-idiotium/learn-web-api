@@ -13,15 +13,6 @@ namespace WepA.Data.Repositories
 
 		public UserRepository(WepADbContext context) => _context = context;
 
-		public IEnumerable<ApplicationUser> GetUsers(Search model)
-		{
-			var users = _context.Users.Filter(model.Filter, model.FilterBy)
-									  .OrderByMultiple(model.OrderBy)
-									  .Paginate(model.Page, model.PageSize)
-									  .ToList();
-			return users;
-		}
-
 		public async Task<bool> AddRefreshTokenAsync(ApplicationUser user, RefreshToken refreshToken)
 		{
 			user.RefreshTokens.Add(refreshToken);

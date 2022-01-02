@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
-using WepA.Models.Domains;
-using WepA.Models.Dtos;
+using WepA.Models.Entities;
 
 namespace WepA.Interfaces.Services
 {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Security.Claims;
-using WepA.Models.Domains;
-using WepA.Models.Dtos;
+using WepA.Models.Entities;
+using WepA.Models.Dtos.Token;
 
 namespace WepA.Interfaces.Services
 {
