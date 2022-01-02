@@ -47,5 +47,13 @@ namespace WepA.Controllers
 			var users = _userService.GetList(model);
 			return Ok(new GenericResponse().For(users, SuccessResponseMessages.Generic));
 		}
+
+		[AllowAnonymous]
+		[HttpPost]
+		public async Task<IActionResult> MockCreate([FromBody] List<CreateUserRequest> models)
+		{
+			await _userService.MockCreateAsync(models);
+			return Ok(new GenericResponse(SuccessResponseMessages.UserRegistered));
+		}
 	}
 }
