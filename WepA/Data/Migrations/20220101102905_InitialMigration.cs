@@ -26,9 +26,9 @@ namespace WepA.Data.Migrations
 				columns: table => new
 				{
 					Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-					FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-					LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-					DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+					FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+					LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+					DateOfBirth = table.Column<DateTime>(type: "Date", nullable: true),
 					Address = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
 					UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
 					NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),

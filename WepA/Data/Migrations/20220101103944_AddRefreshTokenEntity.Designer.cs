@@ -10,15 +10,15 @@ using WepA.Data;
 namespace WepA.Data.Migrations
 {
     [DbContext(typeof(WepADbContext))]
-    [Migration("20211221175931_AddCustomTableRefreshTokens")]
-    partial class AddCustomTableRefreshTokens
+    [Migration("20220101103944_AddRefreshTokenEntity")]
+    partial class AddRefreshTokenEntity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.12")
+                .HasAnnotation("ProductVersion", "5.0.13")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -152,7 +152,7 @@ namespace WepA.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("WepA.Models.Domains.ApplicationUser", b =>
+            modelBuilder.Entity("WepA.Models.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -169,7 +169,7 @@ namespace WepA.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("Date");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -245,7 +245,7 @@ namespace WepA.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("WepA.Models.Domains.ApplicationUser", null)
+                    b.HasOne("WepA.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -254,7 +254,7 @@ namespace WepA.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("WepA.Models.Domains.ApplicationUser", null)
+                    b.HasOne("WepA.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -269,7 +269,7 @@ namespace WepA.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WepA.Models.Domains.ApplicationUser", null)
+                    b.HasOne("WepA.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -278,16 +278,16 @@ namespace WepA.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("WepA.Models.Domains.ApplicationUser", null)
+                    b.HasOne("WepA.Models.Entities.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WepA.Models.Domains.ApplicationUser", b =>
+            modelBuilder.Entity("WepA.Models.Entities.ApplicationUser", b =>
                 {
-                    b.OwnsMany("WepA.Models.Domains.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("WepA.Models.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
