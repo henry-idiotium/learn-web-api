@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using WepA.Models.Domains;
+using WepA.Models.Entities;
 
 namespace WepA.Data
 {

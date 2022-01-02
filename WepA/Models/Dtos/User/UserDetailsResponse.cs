@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Mapster;
 using Sieve.Attributes;
 
-namespace WepA.Models.Dtos.Token.User
+namespace WepA.Models.Dtos.User
 {
 	public class UserDetailsResponse
 	{
@@ -25,6 +25,12 @@ namespace WepA.Models.Dtos.Token.User
 		[Sieve(CanFilter = true, CanSort = true)]
 		public string Address { get; set; }
 
+		[JsonIgnore]
+		[Sieve(CanFilter = true, CanSort = true)]
 		public DateTime? DateOfBirth { get; set; }
+
+		[AdaptIgnore]
+		[JsonPropertyName("dateOfBirth")]
+		public string DateOfBirthString { get { return DateOfBirth?.ToString("dd-MM-yyyy"); } }
 	}
 }

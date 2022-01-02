@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WepA.Helpers.LinqExtension;
 using WepA.Interfaces.Repositories;
-using WepA.Models;
-using WepA.Models.Domains;
+using WepA.Models.Entities;
+
 namespace WepA.Data.Repositories
 {
 	public class UserRepository : IUserRepository
@@ -38,26 +37,20 @@ namespace WepA.Data.Repositories
 			return user;
 		}
 
-		public async Task<bool> RemoveOutdatedRefreshTokensAsync(ApplicationUser user)
-		{
-			user.RefreshTokens.RemoveAll(t => !t.IsActive && t.Expires <= DateTime.UtcNow);
-			var removed = await _context.SaveChangesAsync();
-			return removed > 0;
-		}
-
-		public bool ValidateUserExistence(ApplicationUser user)
-		{
-			var userExists = _context.Users.SingleOrDefault(u =>
-				u.Email == user.Email
-				|| u.UserName == user.UserName);
-			return userExists != null;
-		}
-
 		public RefreshToken GetRefreshToken(string token)
 		{
 			var user = GetByRefreshToken(token);
 			var refreshToken = user.RefreshTokens.SingleOrDefault(t => t.Token == token);
 			return refreshToken;
+		}
+
+		public IEnumerable<ApplicationUser> GetUsers() => _context.Users;
+
+		public async Task<bool> RemoveOutdatedRefreshTokensAsync(ApplicationUser user)
+		{
+			user.RefreshTokens.RemoveAll(t => !t.IsActive && t.Expires <= DateTime.UtcNow);
+			var removed = await _context.SaveChangesAsync();
+			return removed > 0;
 		}
 
 		public async Task<bool> RevokeRefreshTokenAsync(RefreshToken token, string reason = null,
@@ -91,6 +84,14 @@ namespace WepA.Data.Repositories
 				revoked = await _context.SaveChangesAsync();
 			}
 			return revoked > 0;
+		}
+
+		public bool ValidateExistence(ApplicationUser user)
+		{
+			var userExists = _context.Users.SingleOrDefault(u =>
+				u.Email == user.Email
+				|| u.UserName == user.UserName);
+			return userExists != null;
 		}
 
 		private static void RevokeToken(RefreshToken token, string reason = null,

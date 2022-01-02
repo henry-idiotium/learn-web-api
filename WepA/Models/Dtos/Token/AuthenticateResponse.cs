@@ -1,5 +1,3 @@
-using WepA.Models.Entities;
-
 namespace WepA.Models.Dtos.Token
 {
 	public class AuthenticateResponse

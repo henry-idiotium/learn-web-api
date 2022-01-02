@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using WepA.Helpers.Messages;
-using WepA.Models.Domains;
-using WepA.Models.Dtos;
+using WepA.Helpers.ResponseMessages;
+using WepA.Models.Entities;
 
 namespace WepA.Helpers.Attributes
 {
@@ -25,7 +24,7 @@ namespace WepA.Helpers.Attributes
 			var user = (ApplicationUser)context.HttpContext.Items["ApplicationUser"];
 			if (user == null)
 			{
-				context.Result = new JsonResult(new { message = ErrorResponseMessages.GenericError })
+				context.Result = new JsonResult(new { message = ErrorResponseMessages.UnknownError })
 				{
 					StatusCode = StatusCodes.Status400BadRequest
 				};
