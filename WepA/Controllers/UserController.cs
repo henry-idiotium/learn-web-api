@@ -8,7 +8,7 @@ using WepA.Helpers.Attributes;
 using WepA.Helpers.ResponseMessages;
 using WepA.Interfaces.Services;
 using WepA.Models.Dtos.Common;
-using WepA.Models.Dtos.User;
+using WepA.Models.Dtos.Common;
 
 namespace WepA.Controllers
 {

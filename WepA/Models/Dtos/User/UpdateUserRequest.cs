@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace WepA.Models.Dtos.User
+namespace WepA.Models.Dtos.Common
 {
 	public class UpdateUserRequest
 	{

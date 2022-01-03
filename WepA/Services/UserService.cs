@@ -14,7 +14,7 @@ using WepA.Helpers.ResponseMessages;
 using WepA.Interfaces.Repositories;
 using WepA.Interfaces.Services;
 using WepA.Models.Dtos.Token;
-using WepA.Models.Dtos.User;
+using WepA.Models.Dtos.Common;
 using WepA.Models.Entities;
 
 namespace WepA.Services
@@ -96,7 +96,7 @@ namespace WepA.Services
 
 		public async Task<ApplicationUser> GetByIdAsync(string userId) => await _userManager.FindByIdAsync(userId);
 
-		public UserListResponse GetList(SieveModel model)
+		public ObjectListResponse GetList(SieveModel model)
 		{
 			if (model == null)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
@@ -109,7 +109,7 @@ namespace WepA.Services
 
 			var pageSize = model.PageSize ?? _sieveOptions.DefaultPageSize;
 
-			return new UserListResponse(sortedUsers, sortedUsers.Count(),
+			return new ObjectListResponse(sortedUsers, sortedUsers.Count(),
 				currentPage: model.Page ?? 1,
 				totalPages: (int)Math.Ceiling((float)users.Count() / pageSize));
 		}

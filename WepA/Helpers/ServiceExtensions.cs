@@ -13,7 +13,7 @@ using WepA.Data;
 using WepA.Data.Repositories;
 using WepA.Interfaces.Repositories;
 using WepA.Interfaces.Services;
-using WepA.Models.Dtos.User;
+using WepA.Models.Dtos.Common;
 using WepA.Models.Entities;
 using WepA.Services;
 

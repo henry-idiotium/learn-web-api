@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Mapster;
 using Sieve.Attributes;
 
-namespace WepA.Models.Dtos.User
+namespace WepA.Models.Dtos.Common
 {
 	public class UserDetailsResponse
 	{

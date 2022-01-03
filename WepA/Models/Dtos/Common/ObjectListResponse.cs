@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 
-namespace WepA.Models.Dtos.User
+namespace WepA.Models.Dtos.Common
 {
-	public class UserListResponse
+	public class ObjectListResponse
 	{
-		public UserListResponse(IEnumerable<UserDetailsResponse> rows, int count, int currentPage, int totalPages)
+		public ObjectListResponse(IEnumerable<object> rows, int count, int currentPage, int totalPages)
 		{
 			Rows = rows;
 			Count = count;
@@ -13,7 +13,7 @@ namespace WepA.Models.Dtos.User
 		}
 
 		public int Count { get; set; }
-		public IEnumerable<UserDetailsResponse> Rows { get; set; }
+		public IEnumerable<object> Rows { get; set; }
 		public int CurrentPage { get; set; }
 		public int TotalPages { get; set; }
 	}
