@@ -7,8 +7,8 @@ namespace WepA.Models.Dtos.Common
 {
 	public class UserDetailsResponse
 	{
-		[JsonPropertyName("id")]
-		public string EncodedId { get; set; }
+		[Sieve(CanFilter = false, CanSort = false)]
+		public string Id { get; set; }
 
 		[Sieve(CanFilter = true, CanSort = true)]
 		public string UserName { get; set; }

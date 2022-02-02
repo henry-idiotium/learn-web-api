@@ -18,7 +18,7 @@ namespace WepA.Services
 {
 	public class JwtService : IJwtService
 	{
-		private readonly byte[] _jwtSecret;
+		private readonly byte[] _jwtEncodedSecret;
 		private readonly JwtSettings _jwtSettings;
 		private readonly List<string> _validLocations = new()
 		{
@@ -28,29 +28,28 @@ namespace WepA.Services
 		public JwtService(IOptions<JwtSettings> jwtSettings)
 		{
 			_jwtSettings = jwtSettings.Value;
-			_jwtSecret = EncryptHelpers.EncodeASCII(_jwtSettings.Secret);
+			_jwtEncodedSecret = EncryptHelpers.EncodeASCII(_jwtSettings.Secret);
 		}
 
 		public AccessToken GenerateAccessToken(IEnumerable<Claim> claims)
 		{
+			// var expireAt = DateTime.UtcNow.AddSeconds(_jwtSettings.AccessTokenExpiredDate);
+			var expireAt = DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenExpiredDate);
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
 				Issuer = _jwtSettings.Issuer,
 				Audience = _jwtSettings.Audience,
 				Subject = new ClaimsIdentity(claims),
-				// Expires = DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenExpiration),
-				Expires = DateTime.UtcNow.AddSeconds(5), // Testing
+				Expires = expireAt,
 				SigningCredentials = new SigningCredentials(
-					key: new SymmetricSecurityKey(_jwtSecret),
+					key: new SymmetricSecurityKey(_jwtEncodedSecret),
 					algorithm: SecurityAlgorithms.HmacSha256Signature)
 			};
 
 			var tokenHandler = new JwtSecurityTokenHandler();
 			var token = tokenHandler.CreateToken(tokenDescriptor);
 
-			// var expireIn = (int)new TimeSpan(_jwtSettings.AccessTokenExpiration,0,0,0).TotalSeconds;
-			var expireIn = (int)new TimeSpan(0,0,0,5).TotalSeconds; // Testing
-			return new AccessToken(tokenHandler.WriteToken(token), expireIn);
+			return new AccessToken(tokenHandler.WriteToken(token), expireAt.ToString("o"));
 		}
 
 		public RefreshToken GenerateRefreshToken(string userId)
@@ -66,7 +65,7 @@ namespace WepA.Services
 			var refreshToken = new RefreshToken
 			{
 				Token = Convert.ToBase64String(randomBytes),
-				Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiration),
+				Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiredDate),
 				Created = DateTime.UtcNow,
 				UserId = userId
 			};
@@ -90,7 +89,7 @@ namespace WepA.Services
 
 					ValidIssuers = _validLocations,
 					ValidAudiences = _validLocations,
-					IssuerSigningKey = new SymmetricSecurityKey(_jwtSecret)
+					IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret)
 				};
 
 				var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
@@ -117,13 +116,13 @@ namespace WepA.Services
 
 					ValidIssuers = _validLocations,
 					ValidAudiences = _validLocations,
-					IssuerSigningKey = new SymmetricSecurityKey(_jwtSecret),
+					IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret),
 					ClockSkew = TimeSpan.Zero
 				}, out SecurityToken validatedToken);
 
 				var jwtToken = validatedToken as JwtSecurityToken;
 				var userId = jwtToken.Claims
-					.FirstOrDefault(claim => claim.Type == "nameid" && claim.Value != null)
+					.FirstOrDefault(claim => (claim.Type == "nameid") && (claim.Value != null))
 					.Value;
 				return userId; // Upon successful validation return user id from JWT token
 			}

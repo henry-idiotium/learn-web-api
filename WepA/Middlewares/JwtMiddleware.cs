@@ -7,14 +7,13 @@ using WepA.Helpers;
 using WepA.Helpers.ResponseMessages;
 using WepA.Interfaces.Services;
 
+// DEPRECATED Already implement jwt attribute
 namespace WepA.Middlewares
 {
 	public static class JwtMiddlewareExt
 	{
-		public static void UseJwtMiddleware(this IApplicationBuilder app)
-		{
+		public static void UseJwtExt(this IApplicationBuilder app) =>
 			app.UseMiddleware<JwtMiddleware>();
-		}
 	}
 
 	public class JwtMiddleware
@@ -23,25 +22,20 @@ namespace WepA.Middlewares
 
 		public JwtMiddleware(RequestDelegate next) => _next = next;
 
-		public async Task InvokeAsync(HttpContext context, IUserService userService, IJwtService jwtService)
+		public async Task InvokeAsync(HttpContext context,
+			IUserService userService, IJwtService jwtService)
 		{
-			// Reading the AuthHeader which is signed with JWT
-			var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-			try
-			{
-				var userId = jwtService.Validate(token);
-				if (!string.IsNullOrWhiteSpace(userId))
-				{
-					// Attach user to context on successful jwt validation
-					context.Items["ApplicationUser"] = await userService.GetByIdAsync(userId);
-				}
-				else
-				{
-					throw new HttpStatusException(HttpStatusCode.Unauthorized,
-						ErrorResponseMessages.Unauthorized);
-				}
-			}
-			catch { } // If jwt validation fails then do nothing
+			var token = context.Request.Headers["Authorization"]
+				.FirstOrDefault()?
+				.Split(" ")
+				.Last();
+			var userId = jwtService.Validate(token);
+			if (!string.IsNullOrWhiteSpace(userId))
+				context.Items["ApplicationUser"] = await userService.GetByIdAsync(userId);
+			else
+				throw new HttpStatusException(HttpStatusCode.Unauthorized,
+											  ErrorResponseMessages.Unauthorized);
+
 			await _next(context);
 		}
 	}

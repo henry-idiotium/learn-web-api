@@ -367,6 +367,3 @@ FodyWeavers.xsd
 
 # vscode configuration
 .vscode/
-
-# kanbn - todo extension configuration
-.kanbn/

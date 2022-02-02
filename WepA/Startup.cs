@@ -1,3 +1,4 @@
+using GraphQL.Server.Ui.Voyager;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -33,18 +34,26 @@ namespace WepA
 				app.UseSwagger();
 				app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WepA v1"));
 			}
+			app.UseCors("DevelopmentPolicy");
+
 			app.UseHttpsRedirection();
 			app.UseRouting();
-
-			app.UseCors("DevelopmentPolicy");
 
 			app.UseAuthentication();
 			app.UseAuthorization();
 
-			app.UseHttpStatusExceptionHandling();
-			app.UseJwtMiddleware();
+			// app.UseJwtExt();
+			app.UseHttpStatusExceptionHandlingExt();
 
-			app.UseEndpoints(endpoints => endpoints.MapControllers());
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapGraphQL();
+				endpoints.MapControllers();
+			});
+			app.UseGraphQLVoyager(new VoyagerOptions()
+			{
+				GraphQLEndPoint = "/graphql"
+			}, "/graphql-voyager");
 		}
 
 		// This method gets called by the runtime. Use this method to add services to the container.
@@ -57,6 +66,7 @@ namespace WepA
 			services.AddCorsExt();
 			services.AddMapsterExt();
 			services.AddDIContainerExt();
+			services.AddGraphQLExt();
 
 			services.Configure<SendGridSettings>(Configuration.GetSection("ExternalProviders:SendGrid"));
 			services.Configure<JwtSettings>(Configuration.GetSection("ServiceSettings:Jwt"));

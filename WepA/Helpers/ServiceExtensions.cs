@@ -11,6 +11,9 @@ using Microsoft.OpenApi.Models;
 using Sieve.Services;
 using WepA.Data;
 using WepA.Data.Repositories;
+using WepA.GraphQL;
+using WepA.GraphQL.Helper;
+using WepA.GraphQL.Types;
 using WepA.Interfaces.Repositories;
 using WepA.Interfaces.Services;
 using WepA.Models.Dtos.Common;
@@ -58,7 +61,8 @@ namespace WepA.Helpers
 					.AllowAnyHeader()
 					.WithOrigins(
 						"https://localhost:5000",
-						"https://localhost:5001")));
+						"https://localhost:5001",
+						"http://localhost:3000")));
 		}
 
 		public static void AddDIContainerExt(this IServiceCollection services)
@@ -69,6 +73,15 @@ namespace WepA.Helpers
 			services.AddScoped<IEmailService, EmailService>();
 			services.AddScoped<IJwtService, JwtService>();
 			services.AddScoped<IUserRepository, UserRepository>();
+		}
+
+		public static void AddGraphQLExt(this IServiceCollection services)
+		{
+			services.AddErrorFilter<GraphQLErrorFilter>();
+			services.AddGraphQLServer()
+					.AddQueryType<Query>()
+					.AddMutationType<Mutation>()
+					.AddProjections();
 		}
 
 		public static void AddIdentityExt(this IServiceCollection services, bool isDevelopment)
@@ -101,7 +114,10 @@ namespace WepA.Helpers
 			var config = new TypeAdapterConfig();
 
 			config.NewConfig<ApplicationUser, UserDetailsResponse>()
-				  .Map(dest => dest.EncodedId, src => EncryptHelpers.EncodeBase64Url(src.Id));
+				  .Map(dest => dest.Id, src => EncryptHelpers.EncodeBase64Url(src.Id));
+			config.NewConfig<UserDetailsResponse, UserDetails>()
+				  .Map(dest => dest.DateOfBirth, src => src.DateOfBirthString);
+
 
 			services.AddSingleton(config);
 			services.AddScoped<IMapper, ServiceMapper>();

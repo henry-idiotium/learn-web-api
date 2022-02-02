@@ -2,13 +2,13 @@ namespace WepA.Models.Dtos.Token
 {
 	public class AccessToken
 	{
-		public AccessToken(string token, int expireIn)
+		public AccessToken(string token, string expireAt)
 		{
 			Token = token;
-			ExpireIn = expireIn;
+			ExpireAt = expireAt;
 		}
 
 		public string Token { get; set; }
-		public int ExpireIn { get; set; }
+		public string ExpireAt { get; set; }
 	}
 }

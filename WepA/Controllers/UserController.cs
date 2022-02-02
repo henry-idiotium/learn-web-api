@@ -8,7 +8,6 @@ using WepA.Helpers.Attributes;
 using WepA.Helpers.ResponseMessages;
 using WepA.Interfaces.Services;
 using WepA.Models.Dtos.Common;
-using WepA.Models.Dtos.Common;
 
 namespace WepA.Controllers
 {
@@ -37,7 +36,7 @@ namespace WepA.Controllers
 		{
 			var userId = EncryptHelpers.DecodeBase64Url(encodedUserId);
 			var user = await _userService.GetByIdAsync(userId);
-			return Ok(new GenericResponse().For(user, SuccessResponseMessages.Generic));
+			return Ok(new GenericResponse(user, SuccessResponseMessages.Generic));
 		}
 
 		[AllowAnonymous]
@@ -45,7 +44,7 @@ namespace WepA.Controllers
 		public IActionResult GetList([FromQuery] SieveModel model)
 		{
 			var users = _userService.GetList(model);
-			return Ok(new GenericResponse().For(users, SuccessResponseMessages.Generic));
+			return Ok(new GenericResponse(users, SuccessResponseMessages.Generic));
 		}
 
 		[AllowAnonymous]

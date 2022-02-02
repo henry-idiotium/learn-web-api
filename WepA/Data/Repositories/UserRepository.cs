@@ -67,6 +67,8 @@ namespace WepA.Data.Repositories
 				var childToken = user.RefreshTokens.SingleOrDefault(x =>
 					x.Token == token.ReplacedByToken);
 
+				if (childToken == null || childToken.IsActive) return false;
+
 				if (childToken.IsActive)
 					RevokeToken(childToken, reason);
 				else

@@ -14,7 +14,7 @@ namespace WepA.Services
 {
 	public class EmailService : IEmailService
 	{
-		private const string _authPath = "https://localhost:5001/api/auth/verifyemail";
+		private const string _authPath = "http://localhost:3000/auth/verifyemail";
 		private readonly ILogger<EmailService> _logger;
 		private readonly SendGridSettings _sendGridSettings;
 
@@ -28,6 +28,7 @@ namespace WepA.Services
 		{
 			var client = new SendGridClient(_sendGridSettings.ApiKey);
 			var message = new SendGridMessage();
+
 			message.SetSubject("Welcome to WepA");
 			message.SetFrom(new EmailAddress(_sendGridSettings.SenderEmail,
 											 _sendGridSettings.SenderName));

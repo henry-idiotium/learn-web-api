@@ -22,7 +22,7 @@ namespace WepA.Controllers
 			_accountService = accountService;
 		}
 
-		[HttpPost]
+		[HttpGet]
 		public async Task<IActionResult> Login([FromBody] LoginRequest model)
 		{
 			if (!ModelState.IsValid)
@@ -30,7 +30,7 @@ namespace WepA.Controllers
 
 			var authenticateResponse = await _accountService.LoginAsync(model);
 
-			return Ok(new GenericResponse().For(authenticateResponse, SuccessResponseMessages.Generic));
+			return Ok(new GenericResponse(authenticateResponse, SuccessResponseMessages.Generic));
 		}
 
 		[HttpPost]
@@ -44,7 +44,7 @@ namespace WepA.Controllers
 			return Ok(new GenericResponse(SuccessResponseMessages.UserRegistered));
 		}
 
-		[HttpGet("{userId}/{code}")]
+		[HttpPut("{userId}/{code}")]
 		public async Task<IActionResult> VerifyEmail(string userId, string code)
 		{
 			var decodedUserId = EncryptHelpers.DecodeBase64Url(userId);

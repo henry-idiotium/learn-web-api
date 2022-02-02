@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 
-namespace WepA.Models.Dtos.Common
+namespace WepA.GraphQL.Types
 {
-	public class ObjectListResponse
+	public class ResponseTable<T>
 	{
-		public ObjectListResponse(IEnumerable<object> rows, int count, int currentPage, int totalPages)
+		public ResponseTable(IEnumerable<T> rows, int count, int currentPage, int totalPages)
 		{
 			Rows = rows;
 			Count = count;
@@ -13,7 +13,7 @@ namespace WepA.Models.Dtos.Common
 		}
 
 		public int Count { get; private set; }
-		public IEnumerable<object> Rows { get; private set; }
+		public IEnumerable<T> Rows { get; private set; }
 		public int CurrentPage { get; private set; }
 		public int TotalPages { get; private set; }
 	}

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -24,19 +23,19 @@ namespace WepA.Controllers
 			_userService = userService;
 		}
 
-		[HttpGet]
+		[HttpPut]
 		public IActionResult Revoke(string refreshToken)
 		{
 			if (string.IsNullOrEmpty(refreshToken))
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-											  ErrorResponseMessages.InvalidRefreshToken);
+											  ErrorResponseMessages.InvalidTokens);
 
 			_userService.RevokeRefreshToken(refreshToken);
 			return Ok(new GenericResponse(SuccessResponseMessages.TokenRevoked));
 		}
 
 		[AllowAnonymous]
-		[HttpPost]
+		[HttpPut]
 		public async Task<IActionResult> Rotate([FromBody] TokenRotateRequest model)
 		{
 			if (model.AccessToken == null || model.RefreshToken == null)
@@ -44,7 +43,7 @@ namespace WepA.Controllers
 											  ErrorResponseMessages.InvalidRequest);
 
 			var response = await _userService.RotateTokensAsync(model);
-			return Ok(new GenericResponse().For(response, SuccessResponseMessages.Generic));
+			return Ok(new GenericResponse(response, SuccessResponseMessages.Generic));
 		}
 	}
 }

@@ -68,7 +68,8 @@ namespace WepA.Services
 			var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
 			await _userService.AddRefreshTokenAsync(user, refreshToken);
 
-			return new AuthenticateResponse(accessToken, refreshToken.Token);
+			user.Id = EncryptHelpers.EncodeBase64Url(user.Id);
+			return new AuthenticateResponse(accessToken, refreshToken.Token, user);
 		}
 
 		public async Task RegisterAsync(RegisterRequest model)
@@ -114,12 +115,12 @@ namespace WepA.Services
 			var user = await _userManager.FindByIdAsync(userId);
 			if (user == null)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-											  ErrorResponseMessages.NotFoundUser);
+											  ErrorResponseMessages.InvalidRequest);
 
 			var result = await _userManager.ConfirmEmailAsync(user, token);
 			if (!result.Succeeded)
-				throw new HttpStatusException(HttpStatusCode.BadRequest,
-											  ErrorResponseMessages.FailedVerifyEmail);
+				throw new HttpStatusException(HttpStatusCode.InternalServerError,
+											  ErrorResponseMessages.UnexpectedError);
 		}
 	}
 }

@@ -13,10 +13,8 @@ namespace WepA.Middlewares
 {
 	public static class ExceptionHandlingMiddlewareExt
 	{
-		public static void UseHttpStatusExceptionHandling(this IApplicationBuilder app)
-		{
+		public static void UseHttpStatusExceptionHandlingExt(this IApplicationBuilder app) =>
 			app.UseMiddleware<HttpStatusExceptionHandlerMiddleware>();
-		}
 	}
 
 	public class HttpStatusExceptionHandlerMiddleware
@@ -61,8 +59,8 @@ namespace WepA.Middlewares
 
 			var response = JsonConvert.SerializeObject(new GenericResponse(
 				message: (exception.Message != null) && (exception is HttpStatusException) ?
-						  exception.Message : ErrorResponseMessages.UnknownError,
-				isSuccess: false
+						  exception.Message : ErrorResponseMessages.UnexpectedError,
+				succeeded: false
 			));
 
 			await context.Response.WriteAsync(response);

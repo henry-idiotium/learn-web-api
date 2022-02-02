@@ -13,8 +13,8 @@ using WepA.Helpers;
 using WepA.Helpers.ResponseMessages;
 using WepA.Interfaces.Repositories;
 using WepA.Interfaces.Services;
-using WepA.Models.Dtos.Token;
 using WepA.Models.Dtos.Common;
+using WepA.Models.Dtos.Token;
 using WepA.Models.Entities;
 
 namespace WepA.Services
@@ -52,7 +52,7 @@ namespace WepA.Services
 		{
 			if (refreshToken == null || !refreshToken.IsActive)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-					ErrorResponseMessages.InvalidRefreshToken);
+											  ErrorResponseMessages.InvalidTokens);
 
 			await _userRepository.AddRefreshTokenAsync(user, refreshToken);
 		}
@@ -91,21 +91,25 @@ namespace WepA.Services
 
 		public Task DeleteAsync(string userId) => throw new NotImplementedException();
 
-		public async Task<ApplicationUser> GetByEmailAsync(string email) =>
-			await _userManager.FindByEmailAsync(email);
+		public async Task<UserDetailsResponse> GetByEmailAsync(string email) =>
+			_mapper.Map<UserDetailsResponse>(await _userManager.FindByEmailAsync(email));
 
-		public async Task<ApplicationUser> GetByIdAsync(string userId) => await _userManager.FindByIdAsync(userId);
+		public async Task<UserDetailsResponse> GetByIdAsync(string userId) =>
+			_mapper.Map<UserDetailsResponse>(await _userManager.FindByIdAsync(userId));
 
 		public ObjectListResponse GetList(SieveModel model)
 		{
 			if (model == null)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.InvalidRequest);
+			if (model.Page < 0 || model.PageSize < 1)
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.InvalidRequest);
 
 			var users = _userRepository.GetUsers();
-			var sortedUsers = _sieveProcessor.Apply(model,
-				_mapper.Map<IEnumerable<UserDetailsResponse>>(users)
-					   .AsQueryable());
+			var sortedUsers = _sieveProcessor
+				.Apply(model, _mapper.Map<IEnumerable<UserDetailsResponse>>(users)
+									 .AsQueryable());
 
 			var pageSize = model.PageSize ?? _sieveOptions.DefaultPageSize;
 
@@ -143,7 +147,6 @@ namespace WepA.Services
 				}
 
 				var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
 				await _userManager.ConfirmEmailAsync(user, confirmToken);
 			}
 		}
@@ -153,7 +156,7 @@ namespace WepA.Services
 			var refreshToken = _userRepository.GetRefreshToken(token);
 			if (!refreshToken.IsActive)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-					ErrorResponseMessages.InvalidRefreshToken);
+											  ErrorResponseMessages.InvalidTokens);
 
 			await _userRepository.RevokeRefreshTokenAsync(refreshToken, "Revoked without replacement");
 		}
@@ -163,21 +166,17 @@ namespace WepA.Services
 			var user = _userRepository.GetByRefreshToken(model.RefreshToken);
 			var refreshToken = _userRepository.GetRefreshToken(model.RefreshToken);
 			if (refreshToken == null)
-			{
-				throw new HttpStatusException(HttpStatusCode.BadRequest,
-					ErrorResponseMessages.InvalidRequest);
-			}
+				throw new HttpStatusException(HttpStatusCode.Unauthorized,
+											  ErrorResponseMessages.InvalidRequest);
+
 			if (refreshToken.IsRevoked)
-			{
 				// revoke all descendant tokens in case this token has been compromised
 				await _userRepository.RevokeRefreshTokenDescendantsAsync(refreshToken, user,
 					reason: $"Attempted reuse of revoked ancestor token: {model.RefreshToken}");
-			}
+
 			if (!refreshToken.IsActive)
-			{
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-					ErrorResponseMessages.InvalidRefreshToken);
-			}
+											  ErrorResponseMessages.InvalidTokens);
 
 			// rotate token
 			var newRefreshToken = _jwtService.GenerateRefreshToken(user.Id);
@@ -190,12 +189,11 @@ namespace WepA.Services
 			// Get principal from expired token
 			var principal = _jwtService.GetClaimsPrincipal(model.AccessToken);
 			if (principal == null)
-			{
-				throw new HttpStatusException(HttpStatusCode.BadRequest,
-					ErrorResponseMessages.InvalidRequest);
-			}
+				throw new HttpStatusException(HttpStatusCode.Unauthorized,
+											  ErrorResponseMessages.InvalidRequest);
+
 			var accessToken = _jwtService.GenerateAccessToken(principal.Claims);
-			return new AuthenticateResponse(accessToken, newRefreshToken.Token);
+			return new AuthenticateResponse(accessToken, newRefreshToken.Token, user);
 		}
 
 		public Task UpdateAsync(ApplicationUser user) => throw new NotImplementedException();
@@ -203,10 +201,9 @@ namespace WepA.Services
 		public bool ValidateExistence(ApplicationUser user)
 		{
 			if (user == null)
-			{
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-					ErrorResponseMessages.InvalidRequest);
-			}
+											  ErrorResponseMessages.InvalidRequest);
+
 			var userExists = _userRepository.ValidateExistence(user);
 			return userExists;
 		}

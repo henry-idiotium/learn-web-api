@@ -12,7 +12,7 @@ namespace WepA.Helpers
 		}
 
 		public HttpStatusException(HttpStatusCode status, string message = null, params object[] args)
-			: base(String.Format(CultureInfo.CurrentCulture, message, args))
+			: base(string.Format(CultureInfo.CurrentCulture, message, args))
 		{
 			Status = status;
 		}
