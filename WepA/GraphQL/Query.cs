@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using HotChocolate;
+using HotChocolate.AspNetCore.Authorization;
 using MapsterMapper;
 using Sieve.Models;
 using WepA.GraphQL.Types;
@@ -12,37 +13,28 @@ using WepA.Models.Dtos.Authenticate;
 
 namespace WepA.GraphQL
 {
+	[Authorize]
 	public class Query
 	{
 		public async Task<Response<UserDetails>> GetAuthInfoAsync(
-			[Service] IJwtService jwtService,
 			[Service] IUserService userService,
 			[Service] IMapper mapper,
 			AuthInfoRequest request)
 		{
-			var userId = jwtService.Validate(request.AccessToken);
-			if (userId == null)
-				throw new HttpStatusException(HttpStatusCode.BadRequest,
-									ErrorResponseMessages.Unauthorized);
-
+			var userId = EncryptHelpers.DecodeBase64Url(request.UserId);
 			var response = await userService.GetByIdAsync(userId);
+			if (response == null)
+				throw new HttpStatusException(HttpStatusCode.BadRequest,
+											  ErrorResponseMessages.InvalidRequest);
+
 			return new(mapper.Map<UserDetails>(response));
 		}
 
 		public Response<ResponseTable<UserDetails>> GetUsers(
 			[Service] IUserService userService,
-			[Service] IJwtService jwtService,
 			[Service] IMapper mapper,
-			SieveModel request, string authToken)
+			SieveModel request)
 		{
-			if (authToken == null || jwtService.Validate(authToken) == null)
-				throw new HttpStatusException(HttpStatusCode.Unauthorized,
-								  ErrorResponseMessages.Unauthorized);
-
-			if (request.Page < 0 || request.PageSize < 0)
-				throw new HttpStatusException(HttpStatusCode.BadRequest,
-								  ErrorResponseMessages.InvalidRequest);
-
 			var users =  userService.GetList(request);
 			return new(new ResponseTable<UserDetails>(
 				count: users.Count,

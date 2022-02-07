@@ -32,9 +32,6 @@ namespace WepA.Middlewares
 			var userId = jwtService.Validate(token);
 			if (!string.IsNullOrWhiteSpace(userId))
 				context.Items["ApplicationUser"] = await userService.GetByIdAsync(userId);
-			else
-				throw new HttpStatusException(HttpStatusCode.Unauthorized,
-											  ErrorResponseMessages.Unauthorized);
 
 			await _next(context);
 		}

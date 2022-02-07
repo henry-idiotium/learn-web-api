@@ -19,7 +19,7 @@ namespace WepA.Helpers.Attributes
 		{
 			// Skip authorization if action is decorated with [AllowAnonymous] attribute
 			var allowAnonymous = context.ActionDescriptor.EndpointMetadata
-								 		.OfType<AllowAnonymousAttribute>().Any();
+				.OfType<AllowAnonymousAttribute>().Any();
 
 			if (allowAnonymous) return;
 

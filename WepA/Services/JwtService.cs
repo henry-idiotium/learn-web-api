@@ -22,6 +22,7 @@ namespace WepA.Services
 		private readonly JwtSettings _jwtSettings;
 		private readonly List<string> _validLocations = new()
 		{
+			"http://localhost:3000",
 			"https://localhost:5001",
 			"https://localhost:5000"
 		};
@@ -33,7 +34,6 @@ namespace WepA.Services
 
 		public AccessToken GenerateAccessToken(IEnumerable<Claim> claims)
 		{
-			// var expireAt = DateTime.UtcNow.AddSeconds(_jwtSettings.AccessTokenExpiredDate);
 			var expireAt = DateTime.UtcNow.AddDays(_jwtSettings.AccessTokenExpiredDate);
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{

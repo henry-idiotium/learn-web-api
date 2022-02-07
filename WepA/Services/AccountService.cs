@@ -76,7 +76,7 @@ namespace WepA.Services
 		{
 			if (model.Password != model.ConfirmPassword)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
-											  ErrorResponseMessages.PasswordNotMatch);
+											  ErrorResponseMessages.InvalidRequest);
 
 			model.UserName ??= model.Email;
 			var user = _mapper.Map<ApplicationUser>(model);
@@ -95,7 +95,7 @@ namespace WepA.Services
 			{
 				_logger.LogError($"Failed to add role to user {user.Email}", addRole.Errors);
 				throw new HttpStatusException(HttpStatusCode.InternalServerError,
-											  ErrorResponseMessages.ServerError);
+											  ErrorResponseMessages.UnexpectedError);
 			}
 
 			var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);

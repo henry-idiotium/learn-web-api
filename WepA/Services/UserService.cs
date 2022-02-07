@@ -80,7 +80,7 @@ namespace WepA.Services
 			{
 				_logger.LogError($"Failed to add role to user {user.Email}.", addRoles.Errors);
 				throw new HttpStatusException(HttpStatusCode.InternalServerError,
-											  ErrorResponseMessages.ServerError);
+											  ErrorResponseMessages.UnexpectedError);
 			}
 
 			var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -99,10 +99,7 @@ namespace WepA.Services
 
 		public ObjectListResponse GetList(SieveModel model)
 		{
-			if (model == null)
-				throw new HttpStatusException(HttpStatusCode.BadRequest,
-											  ErrorResponseMessages.InvalidRequest);
-			if (model.Page < 0 || model.PageSize < 1)
+			if (model?.Page < 0 || model?.PageSize < 1)
 				throw new HttpStatusException(HttpStatusCode.BadRequest,
 											  ErrorResponseMessages.InvalidRequest);
 
@@ -143,7 +140,7 @@ namespace WepA.Services
 				{
 					_logger.LogError($"Failed to add role to user {user.Email}.", addRoles.Errors);
 					throw new HttpStatusException(HttpStatusCode.InternalServerError,
-												  ErrorResponseMessages.ServerError);
+												  ErrorResponseMessages.UnexpectedError);
 				}
 
 				var confirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);

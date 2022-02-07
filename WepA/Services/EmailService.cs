@@ -53,7 +53,7 @@ namespace WepA.Services
 			{
 				_logger.LogError($"Failed to send an email \"{user.Email}\".", response.Headers.Warning);
 				throw new HttpStatusException(HttpStatusCode.InternalServerError,
-											  ErrorResponseMessages.ServerError);
+											  ErrorResponseMessages.UnexpectedError);
 			}
 		}
 	}

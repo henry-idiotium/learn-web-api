@@ -12,7 +12,6 @@ using Sieve.Services;
 using WepA.Data;
 using WepA.Data.Repositories;
 using WepA.GraphQL;
-using WepA.GraphQL.Helper;
 using WepA.GraphQL.Types;
 using WepA.Interfaces.Repositories;
 using WepA.Interfaces.Services;
@@ -28,8 +27,9 @@ namespace WepA.Helpers
 		{
 			var key = Encoding.ASCII.GetBytes(secret);
 			var validLocations = new List<string>{
+				"http://localhost:3000",
 				"https://localhost:5001",
-				"https://localhost:5000"
+				"https://localhost:5000",
 			};
 			services.AddAuthentication(options =>
 			{
@@ -49,7 +49,7 @@ namespace WepA.Helpers
 					ValidIssuers = validLocations,
 					ValidAudiences = validLocations,
 					IssuerSigningKey = new SymmetricSecurityKey(key),
-					ClockSkew = TimeSpan.FromMinutes(1)
+					ClockSkew = TimeSpan.Zero
 				};
 			});
 		}
@@ -60,9 +60,9 @@ namespace WepA.Helpers
 				builder.AllowAnyMethod()
 					.AllowAnyHeader()
 					.WithOrigins(
+						"http://localhost:3000",
 						"https://localhost:5000",
-						"https://localhost:5001",
-						"http://localhost:3000")));
+						"https://localhost:5001")));
 		}
 
 		public static void AddDIContainerExt(this IServiceCollection services)
@@ -81,6 +81,7 @@ namespace WepA.Helpers
 			services.AddGraphQLServer()
 					.AddQueryType<Query>()
 					.AddMutationType<Mutation>()
+					.AddAuthorization()
 					.AddProjections();
 		}
 
@@ -117,7 +118,6 @@ namespace WepA.Helpers
 				  .Map(dest => dest.Id, src => EncryptHelpers.EncodeBase64Url(src.Id));
 			config.NewConfig<UserDetailsResponse, UserDetails>()
 				  .Map(dest => dest.DateOfBirth, src => src.DateOfBirthString);
-
 
 			services.AddSingleton(config);
 			services.AddScoped<IMapper, ServiceMapper>();

@@ -1,4 +1,3 @@
-using GraphQL.Server.Ui.Voyager;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +41,6 @@ namespace WepA
 			app.UseAuthentication();
 			app.UseAuthorization();
 
-			// app.UseJwtExt();
 			app.UseHttpStatusExceptionHandlingExt();
 
 			app.UseEndpoints(endpoints =>
@@ -50,10 +48,7 @@ namespace WepA
 				endpoints.MapGraphQL();
 				endpoints.MapControllers();
 			});
-			app.UseGraphQLVoyager(new VoyagerOptions()
-			{
-				GraphQLEndPoint = "/graphql"
-			}, "/graphql-voyager");
+			app.UseGraphQLVoyager("/graphql-voyager");
 		}
 
 		// This method gets called by the runtime. Use this method to add services to the container.
@@ -63,6 +58,7 @@ namespace WepA
 				options.UseSqlServer(Configuration.GetConnectionString("WepA")));
 
 			services.AddIdentityExt(CurrentEnvironment.IsDevelopment());
+			services.AddAuthenticationExt(Configuration.GetValue<string>("ServiceSettings:Jwt:Secret"));
 			services.AddCorsExt();
 			services.AddMapsterExt();
 			services.AddDIContainerExt();
